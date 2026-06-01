@@ -69,15 +69,12 @@ class ChatEngine:
         )
 
         while self._running:
+            divider()
             try:
-                divider()
-                user_input = await session.prompt_async(
-                    Text(" You: ", style="accent.bold") + "> ",
-                    style="",
-                )
+                user_input = await session.prompt_async(" You: > ")
             except (EOFError, KeyboardInterrupt):
                 console.print()
-                console.print(Text(" Goodbye! 👋", style="primary"))
+                console.print(Text(" Goodbye!", style="primary"))
                 break
 
             if not user_input or not user_input.strip():

@@ -78,9 +78,10 @@ class InteractiveCLI:
             except Exception as e:
                 logger.warning("Google Sheets connection failed: %s", e)
 
-        # ── Orchestrator ──
+        # ── Orchestrator (reuse services to avoid duplicate init) ──
         self.orchestrator = JobApplicationOrchestrator(
-            self.config, self.repo, self.candidate_profile
+            self.config, self.repo, self.candidate_profile,
+            groq=self.groq, sheets=self.sheets,
         )
 
         # ── Session & Memory ──

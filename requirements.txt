@@ -30,6 +30,8 @@ google-api-python-client>=2.108.0
 rich>=13.7.0
 prompt_toolkit>=3.0.43
 markdown-it-py>=3.0.0
+textual>=0.60.0
+textual-fspicker>=0.1.0
 
 # Utilities
 pyautogui>=0.9.54

@@ -20,13 +20,11 @@ class AIProvider(str, Enum):
 
 
 class GroqModel(str, Enum):
+    LLAMA_4_SCOUT = "meta-llama/llama-4-scout-17b-16e-instruct"
+    LLAMA_33_70B = "llama-3.3-70b-versatile"
+    LLAMA_31_8B = "llama-3.1-8b-instant"
+    QWEN3_32B = "qwen/qwen3-32b"
     DEEPSEEK_R1 = "deepseek-r1-distill-llama-70b"
-    LLAMA_4_SCOUT = "llama-4-scout-17b-16e-instruct"
-    QWEN = "qwen-qwq-32b"
-    LLAMA_4 = "llama-4-scout-17b-16e-instruct"
-    LLAMA_3_70B = "llama3-70b-8192"
-    LLAMA_3_8B = "llama3-8b-8192"
-    GEMMA2 = "gemma2-9b-it"
 
 
 class JobPlatform(str, Enum):
@@ -114,7 +112,7 @@ class AIConfig(BaseModel):
     use_ai: bool = True
     provider: AIProvider = AIProvider.GROQ
     groq_api_key: str = ""
-    groq_model: GroqModel = GroqModel.LLAMA_4_SCOUT
+    groq_model: GroqModel = GroqModel.LLAMA_33_70B
     openai_api_key: str = ""
     openai_model: str = "gpt-4o"
     deepseek_api_key: str = ""

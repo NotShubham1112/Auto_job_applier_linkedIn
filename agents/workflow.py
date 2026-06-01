@@ -49,14 +49,16 @@ class JobApplicationOrchestrator:
         config: AppConfig,
         repo: Repository,
         candidate_profile: str = "",
+        groq: GroqService | None = None,
+        sheets: GoogleSheetsService | None = None,
     ) -> None:
         self.config = config
         self.repo = repo
 
-        # Initialize services
-        self.groq = GroqService(config.ai)
-        self.sheets = GoogleSheetsService(config.google_sheets)
-        if config.google_sheets.enabled:
+        # Initialize services (reuse if provided)
+        self.groq = groq or GroqService(config.ai)
+        self.sheets = sheets or GoogleSheetsService(config.google_sheets)
+        if config.google_sheets.enabled and not sheets:
             self.sheets.connect()
 
         # Initialize agents
