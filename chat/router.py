@@ -71,7 +71,7 @@ class CommandRouter:
         if not user_input:
             return
 
-        # Store in memory
+        # Store user message in memory
         self.memory.add_message("user", user_input)
 
         plugin, args = self.registry.resolve(user_input)
@@ -100,10 +100,6 @@ class CommandRouter:
             # ── Natural language → LLM ──
             async for token in self._llm_chat(user_input):
                 yield token
-
-        # Store response in memory (we don't have the full response during streaming,
-        # but we can accumulate it in the caller)
-        self.memory.add_message("assistant", "[streaming response]")
 
     async def _llm_chat(self, user_input: str) -> AsyncGenerator[str, None]:
         """Stream a response from the LLM for natural language input."""

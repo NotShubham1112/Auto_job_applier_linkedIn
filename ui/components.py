@@ -105,7 +105,7 @@ def jobs_table(jobs: list[dict[str, Any]], max_rows: int = 10) -> Table:
         title=Text(f"  Jobs ({len(jobs)} total)  ", style="primary"),
         box=HEAVY_EDGE,
         border_style="secondary",
-        header_style="bold secondary",
+        header_style="secondary.bold",
         show_lines=True,
         padding=(0, 1),
     )
@@ -118,7 +118,7 @@ def jobs_table(jobs: list[dict[str, Any]], max_rows: int = 10) -> Table:
     for i, j in enumerate(jobs[:max_rows], 1):
         score = j.get("score", 0) or j.get("ranking", {}).get("score", 0)
         decision = j.get("decision", {}).get("decision", "PENDING")
-        score_style = "score_high" if score >= 80 else "score_mid" if score >= 60 else "score_low"
+        score_style = "score.high" if score >= 80 else "score.mid" if score >= 60 else "score.low"
         table.add_row(
             str(i),
             j.get("title", "—")[:50],
@@ -148,7 +148,7 @@ def score_breakdown_table(ranking: dict[str, Any]) -> Table:
         ("salary_match", "Salary"),
     ]:
         val = ranking.get(key, 0)
-        style = "score_high" if val >= 80 else "score_mid" if val >= 60 else "score_low"
+        style = "score.high" if val >= 80 else "score.mid" if val >= 60 else "score.low"
         table.add_row(label, Text(f"{val:.0f}/100", style=style))
 
     table.add_row(
@@ -157,7 +157,7 @@ def score_breakdown_table(ranking: dict[str, Any]) -> Table:
     )
     total = ranking.get("score", 0)
     table.add_row(
-        Text("Total", style="bold primary"),
+        Text("Total", style="primary.bold"),
         Text(f"{total:.0f}/100", style="primary" if total >= 80 else "warning"),
     )
     return table

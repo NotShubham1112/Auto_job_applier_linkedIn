@@ -105,14 +105,10 @@ class ChatEngine:
 
     async def _process_and_render(self, user_input: str) -> None:
         """Route input, stream response, and render."""
-        # Buffer for storing the full response
-        response_buffer: list[str] = []
-
         generator = self.router.route(user_input)
 
         # Show a spinner while waiting for first token
-        spinner = self._make_spinner()
-        spinner_task = asyncio.create_task(self._show_initial_spinner(spinner))
+        spinner_task = asyncio.create_task(self._show_spinner())
 
         full_response = ""
         first_token = True
@@ -123,7 +119,6 @@ class ChatEngine:
                     await spinner_task
                 except asyncio.CancelledError:
                     pass
-                # Show agent header
                 console.print(Text(" Agent:", style="bold agent"))
                 console.print(" ", end="")
                 sys.stdout.flush()
@@ -146,30 +141,23 @@ class ChatEngine:
         console.print()
         blank()
 
-        # Store full response in memory
         if full_response:
             self.memory.add_message("assistant", full_response)
 
-    async def _show_initial_spinner(self, spinner) -> None:
+    async def _show_spinner(self) -> None:
         """Show a spinner while waiting for first response token."""
-        frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
+        frames = ["|", "/", "-", "\\"]
         i = 0
         try:
             while True:
-                sys.stdout.write(f"\r\033[K{Text(' Thinking... ', style='dim')}{frames[i]}")
+                sys.stdout.write(f"\r\033[K Thinking... {frames[i]}")
                 sys.stdout.flush()
                 i = (i + 1) % len(frames)
-                await asyncio.sleep(0.1)
+                await asyncio.sleep(0.12)
         except asyncio.CancelledError:
             sys.stdout.write("\r\033[K")
             sys.stdout.flush()
             raise
-
-    def _make_spinner(self):
-        """Placeholder spinner object."""
-        class _Spinner:
-            pass
-        return _Spinner()
 
     def _show_welcome(self) -> None:
         """Show welcome message with available commands."""
