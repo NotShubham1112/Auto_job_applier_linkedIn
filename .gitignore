@@ -5,6 +5,7 @@ __pycache__
 all excels
 all resumes
 logs
+data/
 
 old
 
@@ -12,3 +13,6 @@ secrets.py
 config/personals.py
 .venv
 apikeys.py
+.env
+credentials/
+*.db

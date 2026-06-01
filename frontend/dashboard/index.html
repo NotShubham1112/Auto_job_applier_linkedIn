@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Job Agent - Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #e2e8f0; }
+        .header { background: linear-gradient(135deg, #1e293b, #334155); padding: 20px 40px; border-bottom: 1px solid #334155; }
+        .header h1 { font-size: 24px; font-weight: 700; }
+        .header p { color: #94a3b8; font-size: 14px; margin-top: 4px; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px; }
+        .stat-card .label { font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-card .value { font-size: 32px; font-weight: 700; margin-top: 8px; }
+        .stat-card .value.green { color: #22c55e; }
+        .stat-card .value.blue { color: #3b82f6; }
+        .stat-card .value.yellow { color: #eab308; }
+        .stat-card .value.red { color: #ef4444; }
+        .stat-card .value.purple { color: #a855f7; }
+        .section { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+        .section h2 { font-size: 16px; margin-bottom: 16px; }
+        .btn { background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; }
+        .btn:hover { background: #2563eb; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-row { display: flex; gap: 12px; margin-bottom: 24px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #334155; font-size: 13px; }
+        th { color: #94a3b8; font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+        .status-badge { padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+        .status-applied { background: #1e3a5f; color: #60a5fa; }
+        .status-interview { background: #14532d; color: #4ade80; }
+        .status-rejected { background: #450a0a; color: #f87171; }
+        .status-offer { background: #422006; color: #fbbf24; }
+        .score-bar { height: 6px; background: #334155; border-radius: 3px; overflow: hidden; }
+        .score-fill { height: 100%; border-radius: 3px; }
+        .loading { text-align: center; padding: 40px; color: #94a3b8; }
+        .error { color: #ef4444; padding: 20px; }
+        .sheets-link { color: #3b82f6; text-decoration: none; font-size: 14px; }
+        .sheets-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>AI Job Application Agent</h1>
+        <p>Dashboard &mdash; <a class="sheets-link" href="#" id="sheetsLink" target="_blank">Open in Google Sheets</a></p>
+    </div>
+    <div class="container">
+        <div class="btn-row">
+            <button class="btn" onclick="runWorkflow()">Run Workflow</button>
+            <button class="btn" onclick="syncSheets()">Sync to Sheets</button>
+            <button class="btn" onclick="loadDashboard()">Refresh</button>
+        </div>
+
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card"><div class="label">Total Applications</div><div class="value blue" id="totalApps">--</div></div>
+            <div class="stat-card"><div class="label">Today</div><div class="value green" id="todayApps">--</div></div>
+            <div class="stat-card"><div class="label">Response Rate</div><div class="value yellow" id="responseRate">--</div></div>
+            <div class="stat-card"><div class="label">Interviews</div><div class="value green" id="interviews">--</div></div>
+            <div class="stat-card"><div class="label">Offers</div><div class="value purple" id="offers">--</div></div>
+            <div class="stat-card"><div class="label">Rejections</div><div class="value red" id="rejections">--</div></div>
+            <div class="stat-card"><div class="label">Avg Score</div><div class="value blue" id="avgScore">--</div></div>
+        </div>
+
+        <div class="section">
+            <h2>Recent Applications</h2>
+            <div id="applicationsTable"><div class="loading">Loading...</div></div>
+        </div>
+
+        <div class="section">
+            <h2>Platform Breakdown</h2>
+            <div id="platformTable"><div class="loading">Loading...</div></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin + '/api';
+
+        async function loadDashboard() {
+            try {
+                const res = await fetch(`${API_BASE}/dashboard`);
+                const data = await res.json();
+                document.getElementById('totalApps').textContent = data.total_applications || 0;
+                document.getElementById('todayApps').textContent = data.applications_today || 0;
+                document.getElementById('responseRate').textContent = (data.response_rate || 0) + '%';
+                const sc = data.status_counts || {};
+                document.getElementById('interviews').textContent = sc.Interview || 0;
+                document.getElementById('offers').textContent = sc.Offer || 0;
+                document.getElementById('rejections').textContent = sc.Rejected || 0;
+                document.getElementById('avgScore').textContent = (data.score_distribution?.avg_score || 0).toFixed(1);
+
+                // Platform breakdown
+                const platforms = data.platform_breakdown || {};
+                let platHtml = '<table><tr><th>Platform</th><th>Applications</th></tr>';
+                for (const [p, c] of Object.entries(platforms)) {
+                    platHtml += `<tr><td>${p}</td><td>${c}</td></tr>`;
+                }
+                platHtml += '</table>';
+                document.getElementById('platformTable').innerHTML = platHtml || '<p>No data</p>';
+            } catch (e) {
+                document.getElementById('statsGrid').innerHTML = `<div class="error">API not reachable. Start with: python main.py --mode api</div>`;
+            }
+
+            // Load applications
+            try {
+                const res = await fetch(`${API_BASE}/applications?limit=50`);
+                const apps = await res.json();
+                let html = '<table><tr><th>Title</th><th>Company</th><th>Platform</th><th>Score</th><th>Decision</th><th>Status</th><th>Date</th></tr>';
+                for (const a of apps) {
+                    const scoreColor = a.score >= 70 ? '#22c55e' : a.score >= 50 ? '#eab308' : '#ef4444';
+                    html += `<tr>
+                        <td><a href="${a.url}" target="_blank" style="color:#60a5fa">${a.title}</a></td>
+                        <td>${a.company}</td>
+                        <td>${a.platform}</td>
+                        <td><div class="score-bar"><div class="score-fill" style="width:${a.score}%;background:${scoreColor}"></div></div> ${a.score.toFixed(1)}</td>
+                        <td>${a.decision}</td>
+                        <td><span class="status-badge status-${a.status.toLowerCase()}">${a.status}</span></td>
+                        <td>${a.date_applied ? new Date(a.date_applied).toLocaleDateString() : ''}</td>
+                    </tr>`;
+                }
+                html += '</table>';
+                document.getElementById('applicationsTable').innerHTML = apps.length ? html : '<p>No applications yet</p>';
+            } catch (e) {
+                document.getElementById('applicationsTable').innerHTML = '<div class="error">Failed to load applications</div>';
+            }
+        }
+
+        async function runWorkflow() {
+            if (!confirm('Run the full job application workflow?')) return;
+            try {
+                const res = await fetch(`${API_BASE}/workflow/run`, { method: 'POST' });
+                const data = await res.json();
+                alert(`Workflow complete!\nFound: ${data.jobs_found}\nApplied: ${data.applied}\nSkipped: ${data.skipped}\nReview: ${data.review}`);
+                loadDashboard();
+            } catch (e) {
+                alert('Workflow failed: ' + e.message);
+            }
+        }
+
+        async function syncSheets() {
+            try {
+                await fetch(`${API_BASE}/sheets/sync`, { method: 'POST' });
+                alert('Synced to Google Sheets!');
+            } catch (e) {
+                alert('Sync failed: ' + e.message);
+            }
+        }
+
+        loadDashboard();
+    </script>
+</body>
+</html>

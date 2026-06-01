@@ -1,119 +1,250 @@
-'''
-Author:     Sai Vignesh Golla
-LinkedIn:   https://www.linkedin.com/in/saivigneshgolla/
+from __future__ import annotations
 
-Copyright (C) 2024 Sai Vignesh Golla
+import os
+from enum import Enum
+from pathlib import Path
+from typing import Optional
 
-License:    GNU Affero General Public License
-            https://www.gnu.org/licenses/agpl-3.0.en.html
-            
-GitHub:     https://github.com/GodsScion/Auto_job_applier_linkedIn
-
-Support me: https://github.com/sponsors/GodsScion
-
-version:    26.01.20.5.08
-'''
+from pydantic import BaseModel, Field, field_validator
+from pydantic_settings import BaseSettings
 
 
-###################################################### CONFIGURE YOUR BOT HERE ######################################################
+# ---------------------------------------------------------------------------
+# Enums
+# ---------------------------------------------------------------------------
 
-# >>>>>>>>>>> LinkedIn Settings <<<<<<<<<<<
-
-# Keep the External Application tabs open?
-close_tabs = False                  # True or False, Note: True or False are case-sensitive
-'''
-Note: RECOMMENDED TO LEAVE IT AS `True`, if you set it `False`, be sure to CLOSE ALL TABS BEFORE CLOSING THE BROWSER!!!
-'''
-
-# Follow easy applied companies
-follow_companies = False            # True or False, Note: True or False are case-sensitive
-
-## Upcoming features (In Development)
-# # Send connection requests to HR's 
-# connect_hr = True                  # True or False, Note: True or False are case-sensitive
-
-# # What message do you want to send during connection request? (Max. 200 Characters)
-# connect_request_message = ""       # Leave Empty to send connection request without personalized invitation (recommended to leave it empty, since you only get 10 per month without LinkedIn Premium*)
-
-# Do you want the program to run continuously until you stop it? (Beta)
-run_non_stop = False                # True or False, Note: True or False are case-sensitive
-'''
-Note: Will be treated as False if `run_in_background = True`
-'''
-alternate_sortby = True             # True or False, Note: True or False are case-sensitive
-cycle_date_posted = True            # True or False, Note: True or False are case-sensitive
-stop_date_cycle_at_24hr = True      # True or False, Note: True or False are case-sensitive
+class AIProvider(str, Enum):
+    GROQ = "groq"
+    OPENAI = "openai"
+    DEEPSEEK = "deepseek"
 
 
+class GroqModel(str, Enum):
+    DEEPSEEK_R1 = "deepseek-r1-distill-llama-70b"
+    LLAMA_4_SCOUT = "llama-4-scout-17b-16e-instruct"
+    QWEN = "qwen-qwq-32b"
+    LLAMA_4 = "llama-4-scout-17b-16e-instruct"
+    LLAMA_3_70B = "llama3-70b-8192"
+    LLAMA_3_8B = "llama3-8b-8192"
+    GEMMA2 = "gemma2-9b-it"
 
 
-
-# >>>>>>>>>>> RESUME GENERATOR (Experimental & In Development) <<<<<<<<<<<
-
-# Give the path to the folder where all the generated resumes are to be stored
-generated_resume_path = "all resumes/" # (In Development)
-
-
+class JobPlatform(str, Enum):
+    LINKEDIN = "linkedin"
+    WELLFOUND = "wellfound"
+    YC_JOBS = "yc_jobs"
+    REMOTEOK = "remoteok"
 
 
-
-# >>>>>>>>>>> Global Settings <<<<<<<<<<<
-
-# Directory and name of the files where history of applied jobs is saved (Sentence after the last "/" will be considered as the file name).
-file_name = "all excels/all_applied_applications_history.csv"
-failed_file_name = "all excels/all_failed_applications_history.csv"
-logs_folder_path = "logs/"
-
-# Set the maximum amount of time allowed to wait between each click in secs
-click_gap = 1                       # Enter max allowed secs to wait approximately. (Only Non Negative Integers Eg: 0,1,2,3,....)
-
-# If you want to see Chrome running then set run_in_background as False (May reduce performance). 
-run_in_background = False           # True or False, Note: True or False are case-sensitive ,   If True, this will make pause_at_failed_question, pause_before_submit and run_in_background as False
-
-# If you want to disable extensions then set disable_extensions as True (Better for performance)
-disable_extensions = False          # True or False, Note: True or False are case-sensitive
-
-# Run in safe mode. Set this true if chrome is taking too long to open or if you have multiple profiles in browser. This will open chrome in guest profile!
-safe_mode = True                    # True or False, Note: True or False are case-sensitive
-
-# Do you want scrolling to be smooth or instantaneous? (Can reduce performance if True)
-smooth_scroll = False               # True or False, Note: True or False are case-sensitive
-
-# If enabled (True), the program would keep your screen active and prevent PC from sleeping. Instead you could disable this feature (set it to false) and adjust your PC sleep settings to Never Sleep or a preferred time. 
-keep_screen_awake = True            # True or False, Note: True or False are case-sensitive (Note: Will temporarily deactivate when any application dialog boxes are present (Eg: Pause before submit, Help needed for a question..))
-
-# Run in undetected mode to bypass anti-bot protections (Preview Feature, UNSTABLE. Recommended to leave it as False)
-stealth_mode = True                # True or False, Note: True or False are case-sensitive
-
-# Do you want to get alerts on errors related to AI API connection?
-showAiErrorAlerts = False            # True or False, Note: True or False are case-sensitive
-
-# Use ChatGPT for resume building (Experimental Feature can break the application. Recommended to leave it as False) 
-# use_resume_generator = False       # True or False, Note: True or False are case-sensitive ,   This feature may only work with 'stealth_mode = True'. As ChatGPT website is hosted by CloudFlare which is protected by Anti-bot protections!
+class ApplicationDecision(str, Enum):
+    APPLY = "APPLY"
+    SKIP = "SKIP"
+    REVIEW = "REVIEW"
 
 
+class ApplicationStatus(str, Enum):
+    APPLIED = "Applied"
+    INTERVIEW = "Interview"
+    REJECTED = "Rejected"
+    OFFER = "Offer"
+    WITHDRAWN = "Withdrawn"
 
 
+class SortOption(str, Enum):
+    RELEVANCE = "RELEVANCE"
+    DATE_POSTED = "DATE_POSTED"
+    SALARY_HIGH = "SALARY_HIGH"
 
 
+# ---------------------------------------------------------------------------
+# Sub-configs
+# ---------------------------------------------------------------------------
+
+class PersonalInfo(BaseModel):
+    first_name: str = ""
+    middle_name: str = ""
+    last_name: str = ""
+    phone_number: str = ""
+    email: str = ""
+    current_city: str = ""
+    street: str = ""
+    state: str = ""
+    zipcode: str = ""
+    country: str = ""
+    ethnicity: str = ""
+    gender: str = ""
+    disability_status: str = ""
+    veteran_status: str = ""
+    portfolio: str = ""
+    github: str = ""
 
 
+class SearchConfig(BaseModel):
+    search_terms: list[str] = Field(default_factory=lambda: ["AI Engineer", "Full Stack Developer"])
+    search_location: str = ""
+    platforms: list[JobPlatform] = Field(default_factory=lambda: [JobPlatform.LINKEDIN])
+    randomize_search_order: bool = False
+    sort_by: SortOption = SortOption.RELEVANCE
+    date_posted: str = "past week"
+    easy_apply_only: bool = True
+    experience_level: list[str] = Field(default_factory=lambda: ["associate", "mid_senior"])
+    job_type: list[str] = Field(default_factory=lambda: ["full_time"])
+    remote_only: bool = True
+    max_experience_required: int = -1
+    current_experience: int = 0
+    did_masters: bool = False
+    require_visa: bool = False
+    under_10_applicants: bool = False
+    bad_words: list[str] = Field(default_factory=lambda: [
+        "staffing", "recruiting", "commission", "unpaid", "internship",
+        "mlm", "multi-level", "door to door", "data entry",
+    ])
+    about_company_bad_words: list[str] = Field(default_factory=lambda: [
+        "staffing", "recruiting", "consulting",
+    ])
+    about_company_good_words: list[str] = Field(default_factory=list)
+    companies: list[str] = Field(default_factory=list)
+    industry: list[str] = Field(default_factory=list)
+    job_function: list[str] = Field(default_factory=list)
+    job_titles: list[str] = Field(default_factory=list)
+    benefits: list[str] = Field(default_factory=list)
 
 
+class AIConfig(BaseModel):
+    use_ai: bool = True
+    provider: AIProvider = AIProvider.GROQ
+    groq_api_key: str = ""
+    groq_model: GroqModel = GroqModel.LLAMA_4_SCOUT
+    openai_api_key: str = ""
+    openai_model: str = "gpt-4o"
+    deepseek_api_key: str = ""
+    deepseek_model: str = "deepseek-chat"
+    temperature: float = 0.3
+    max_tokens: int = 1024
+    show_error_alerts: bool = False
 
-############################################################################################################
-'''
-THANK YOU for using my tool 😊! Wishing you the best in your job hunt 🙌🏻!
 
-Sharing is caring! If you found this tool helpful, please share it with your peers 🥺. Your support keeps this project alive.
+class ResumeConfig(BaseModel):
+    default_resume_path: str = "all resumes/default/resume.pdf"
+    resumes_dir: str = "all resumes"
+    generated_resume_path: str = "all resumes/generated"
+    years_of_experience: int = 0
+    linkedin_headline: str = ""
+    linkedin_summary: str = ""
+    cover_letter: str = ""
+    website: str = ""
+    linkedin_url: str = ""
+    desired_salary: str = ""
+    notice_period: str = ""
+    confidence_level: str = ""
 
-Support my work on <PATREON_LINK>. Together, we can help more job seekers.
 
-As an independent developer, I pour my heart and soul into creating tools like this, driven by the genuine desire to make a positive impact.
+class ApplicationConfig(BaseModel):
+    pause_before_submit: bool = False
+    pause_at_failed_question: bool = False
+    overwrite_previous_answers: bool = False
+    follow_companies: bool = False
+    user_information_all: str = ""
 
-Your support, whether through donations big or small or simply spreading the word, means the world to me and helps keep this project alive and thriving.
 
-Gratefully yours 🙏🏻,
-Sai Vignesh Golla
-'''
-############################################################################################################
+class RankingConfig(BaseModel):
+    """Thresholds and weights for job ranking."""
+    min_score_threshold: int = 60
+    confidence_threshold: float = 0.7
+
+    # Score weights (0-1 each)
+    skill_match_weight: float = 0.25
+    resume_match_weight: float = 0.20
+    remote_preference_weight: float = 0.15
+    experience_match_weight: float = 0.15
+    startup_quality_weight: float = 0.15
+    salary_weight: float = 0.10
+
+    # Boosts
+    ai_engineering_boost: int = 25
+    agentic_ai_boost: int = 20
+    llm_infrastructure_boost: int = 20
+    rag_systems_boost: int = 15
+    startup_role_boost: int = 15
+    founding_engineer_boost: int = 15
+    research_engineering_boost: int = 10
+
+    # Penalties
+    non_technical_penalty: int = -20
+    sales_penalty: int = -20
+    customer_support_penalty: int = -25
+    wordpress_penalty: int = -25
+    data_entry_penalty: int = -30
+
+    # Auto-reject keywords
+    auto_reject_keywords: list[str] = Field(default_factory=lambda: [
+        "mlm", "multi-level marketing", "commission only",
+        "unpaid internship", "suspicious",
+    ])
+
+
+class SchedulerConfig(BaseModel):
+    enabled: bool = False
+    search_time: str = "08:00"
+    rank_time: str = "08:05"
+    generate_time: str = "08:10"
+    apply_time: str = "08:20"
+    report_time: str = "08:30"
+
+
+class BrowserConfig(BaseModel):
+    stealth_mode: bool = True
+    run_in_background: bool = False
+    close_tabs: bool = True
+    disable_extensions: bool = True
+    safe_mode: bool = True
+    smooth_scroll: bool = True
+    keep_screen_awake: bool = True
+    click_gap: float = 1.0
+
+
+class GoogleSheetsConfig(BaseModel):
+    enabled: bool = False
+    spreadsheet_id: str = ""
+    credentials_path: str = "credentials/google_sheets_credentials.json"
+    sheet_name: str = "Job Applications"
+    auto_sync: bool = True
+    sync_interval_minutes: int = 30
+
+
+class DatabaseConfig(BaseModel):
+    url: str = "sqlite:///data/job_applications.db"
+    echo: bool = False
+
+
+class AppConfig(BaseSettings):
+    """Root application configuration."""
+    model_config = {
+        "env_prefix": "JOB_AGENT_",
+        "env_file": ".env",
+        "env_file_encoding": "utf-8",
+        "env_nested_delimiter": "__",
+    }
+
+    personal: PersonalInfo = Field(default_factory=PersonalInfo)
+    search: SearchConfig = Field(default_factory=SearchConfig)
+    ai: AIConfig = Field(default_factory=AIConfig)
+    resume: ResumeConfig = Field(default_factory=ResumeConfig)
+    application: ApplicationConfig = Field(default_factory=ApplicationConfig)
+    ranking: RankingConfig = Field(default_factory=RankingConfig)
+    scheduler: SchedulerConfig = Field(default_factory=SchedulerConfig)
+    browser: BrowserConfig = Field(default_factory=BrowserConfig)
+    google_sheets: GoogleSheetsConfig = Field(default_factory=GoogleSheetsConfig)
+    database: DatabaseConfig = Field(default_factory=DatabaseConfig)
+
+    logs_folder_path: str = "logs"
+    screenshots_folder: str = "logs/screenshots"
+
+
+def load_config() -> AppConfig:
+    """Load configuration from environment / .env file."""
+    return AppConfig()
+
+
+def get_project_root() -> Path:
+    return Path(__file__).resolve().parent.parent
