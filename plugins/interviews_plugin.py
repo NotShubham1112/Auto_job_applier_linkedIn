@@ -28,7 +28,7 @@ class InterviewsPlugin(Plugin):
             return
 
         table = Table(
-            title=Text(" Response Tracking ", style="bold primary"),
+            title=Text(" Response Tracking ", style="primary.bold"),
             box=None,
             padding=(0, 2),
         )

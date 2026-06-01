@@ -23,13 +23,13 @@ class HelpPlugin(Plugin):
 
         commands = registry.commands_list()
         table = Table(
-            title=Text(" Slash Commands ", style="bold primary"),
+            title=Text(" Slash Commands ", style="primary.bold"),
             box=None,
             border_style="secondary",
             padding=(0, 2),
             show_edge=False,
         )
-        table.add_column("Command", style="bold secondary", no_wrap=True)
+        table.add_column("Command", style="secondary.bold", no_wrap=True)
         table.add_column("Aliases", style="dim", no_wrap=True)
         table.add_column("Description", style="text")
 

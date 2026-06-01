@@ -227,7 +227,7 @@ def header() -> None:
     console.print(
         Panel(
             Align.center(
-                Text("🤖  AI JOB HUNTING ASSISTANT  🤖", style="bold primary"),
+                Text(" AI Job Hunting Assistant ", style="primary.bold"),
             ),
             box=HEAVY_EDGE,
             border_style="primary",

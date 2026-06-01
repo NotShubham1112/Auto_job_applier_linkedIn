@@ -72,7 +72,7 @@ class ChatEngine:
             try:
                 divider()
                 user_input = await session.prompt_async(
-                    Text(" You: ", style="bold accent") + "> ",
+                    Text(" You: ", style="accent.bold") + "> ",
                     style="",
                 )
             except (EOFError, KeyboardInterrupt):
@@ -119,7 +119,7 @@ class ChatEngine:
                     await spinner_task
                 except asyncio.CancelledError:
                     pass
-                console.print(Text(" Agent:", style="bold agent"))
+                console.print(Text(" Agent:", style="agent"))
                 console.print(" ", end="")
                 sys.stdout.flush()
                 first_token = False
@@ -136,7 +136,7 @@ class ChatEngine:
                 await spinner_task
             except asyncio.CancelledError:
                 pass
-            console.print(Text(" Agent:", style="bold agent"))
+            console.print(Text(" Agent:", style="agent"))
 
         console.print()
         blank()

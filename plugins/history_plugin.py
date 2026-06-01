@@ -42,7 +42,7 @@ class HistoryPlugin(Plugin):
             date_str = a.date_applied.strftime("%b %d") if a.date_applied else "—"
             status = a.status or a.decision or "—"
             score = a.score or 0
-            score_str = Text(f"{score:.0f}", style="score_high" if score >= 80 else "score_mid" if score >= 60 else "score_low")
+            score_str = Text(f"{score:.0f}", style="score.high" if score >= 80 else "score.mid" if score >= 60 else "score.low")
             table.add_row(date_str, a.company[:24], a.title[:29], score_str, str(status)[:11])
 
         console.print(table)

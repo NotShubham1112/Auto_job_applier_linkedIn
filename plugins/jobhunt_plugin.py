@@ -152,7 +152,7 @@ class JobHuntPlugin(Plugin):
             yield f"### Job #{idx}: {job.get('title')} at {job.get('company')}\n\n"
 
             score = ranking.get("score", 0)
-            style = "score_high" if score >= 80 else "score_mid" if score >= 60 else "score_low"
+            style = "score.high" if score >= 80 else "score.mid" if score >= 60 else "score.low"
             yield f"**Match Score:** [{style}]{score:.0f}/100[/]\n\n"
 
             yield f"**Company:** {job.get('company', '—')}\n"

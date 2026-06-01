@@ -29,7 +29,7 @@ class StatusPlugin(Plugin):
         blank()
 
         # Stats table
-        table = Table(title=Text(" Application Statistics ", style="bold primary"), box=None, padding=(0, 2))
+        table = Table(title=Text(" Application Statistics ", style="primary.bold"), box=None, padding=(0, 2))
         table.add_column("Metric", style="dim")
         table.add_column("Value", justify="right", style="text")
 

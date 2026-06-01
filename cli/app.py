@@ -55,6 +55,11 @@ class InteractiveCLI:
         """Initialize database, agents, services, and plugins."""
         logger.info("Initializing InteractiveCLI...")
 
+        # ── UTF-8 output for Windows ──
+        import sys
+        if hasattr(sys.stdout, 'reconfigure'):
+            sys.stdout.reconfigure(encoding='utf-8')
+
         # ── Database ──
         Path("data").mkdir(exist_ok=True)
         session_factory = init_database(self.config.database)
