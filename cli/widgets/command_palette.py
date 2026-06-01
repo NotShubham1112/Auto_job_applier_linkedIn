@@ -1,0 +1,240 @@
+"""CommandPalette — a modal fuzzy-search command picker (ctrl+x).
+
+The palette lists every available slash command. The user can type to
+filter, and Enter to run the highlighted command.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Callable, Optional
+
+from rich.text import Text
+from textual.app import ComposeResult
+from textual.binding import Binding
+from textual.containers import Container, Vertical
+from textual.screen import ModalScreen
+from textual.widgets import Input, Static
+
+
+@dataclass
+class PaletteCommand:
+    """One entry in the command palette."""
+
+    name: str           # e.g. "new"
+    description: str    # human-readable description
+    aliases: list[str] = None  # type: ignore
+    category: str = "General"
+    run: Optional[Callable[[str], None]] = None
+
+    def __post_init__(self) -> None:
+        if self.aliases is None:
+            self.aliases = []
+
+    @property
+    def search_text(self) -> str:
+        return f"{self.name} {' '.join(self.aliases)} {self.description} {self.category}".lower()
+
+
+class _PaletteRow(Static):
+    """A single row inside the palette list."""
+
+    DEFAULT_CSS = """
+    _PaletteRow {
+        height: 1;
+        color: #9a9a9a;
+        padding: 0 1;
+    }
+
+    _PaletteRow.--highlight {
+        background: #2a2a2a;
+        color: #f4b183;
+        text-style: bold;
+    }
+
+    _PaletteRow .palette-cmd {
+        color: #e3b341;
+        text-style: bold;
+    }
+
+    _PaletteRow .palette-desc {
+        color: #9a9a9a;
+    }
+    """
+
+    def __init__(self, command: PaletteCommand, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.command = command
+        self._render()
+
+    def set_highlight(self, on: bool) -> None:
+        self.set_class(on, "--highlight")
+        self._render()
+
+    def _render(self) -> None:
+        text = Text()
+        text.append(f" /{self.command.name:<10}", style="bold #e3b341")
+        text.append("  ", style="")
+        text.append(self.command.description, style="#9a9a9a")
+        if self.command.aliases:
+            text.append("  ", style="")
+            text.append(
+                f"({', '.join(self.command.aliases)})", style="#6a6a6a"
+            )
+        self.update(text)
+
+
+class CommandPalette(ModalScreen[Optional[str]]):
+    """Modal command palette (ctrl+x).
+
+    Dismisses with a result: the chosen command name, or None if the
+    user pressed Escape. The caller is responsible for executing the
+    command.
+    """
+
+    BINDINGS = [
+        Binding("escape", "dismiss_palette", "Cancel", show=False),
+        Binding("up", "move_up", "Up", show=False),
+        Binding("down", "move_down", "Down", show=False),
+        Binding("enter", "select", "Select", show=False),
+    ]
+
+    DEFAULT_CSS = """
+    CommandPalette {
+        align: center middle;
+        background: rgba(0, 0, 0, 70%);
+    }
+
+    CommandPalette #palette-container {
+        width: 70;
+        height: auto;
+        max-height: 24;
+        background: #141414;
+        border: round #f4b183;
+        padding: 1 1;
+    }
+
+    CommandPalette #palette-title {
+        color: #f4b183;
+        text-style: bold;
+        height: 1;
+        padding: 0 1;
+    }
+
+    CommandPalette #palette-input {
+        height: 3;
+        background: #0a0a0a;
+        border: tall #2a2a2a;
+        margin: 1 0;
+        padding: 0 1;
+    }
+
+    CommandPalette #palette-list {
+        height: auto;
+        max-height: 16;
+        background: #0a0a0a;
+        border: round #2a2a2a;
+        padding: 0 1;
+    }
+
+    CommandPalette #palette-hint {
+        color: #6a6a6a;
+        height: 1;
+        padding: 0 1;
+        margin-top: 1;
+    }
+    """
+
+    def __init__(self, commands: list[PaletteCommand], **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.all_commands = commands
+        self.filtered: list[PaletteCommand] = list(commands)
+        self.highlight_index = 0
+        self._row_widgets: list[_PaletteRow] = []
+        self._input_widget: Optional[Input] = None
+
+    def compose(self) -> ComposeResult:
+        with Container(id="palette-container"):
+            yield Static(" BROWORK \u2014 Command Palette ", id="palette-title")
+            self._input_widget = Input(
+                placeholder="Type a command...",
+                id="palette-input",
+            )
+            yield self._input_widget
+            with Vertical(id="palette-list"):
+                for cmd in self.filtered:
+                    row = _PaletteRow(cmd)
+                    self._row_widgets.append(row)
+                    yield row
+            yield Static(
+                "\u2191\u2193 navigate  \u23ce select  esc close",
+                id="palette-hint",
+            )
+
+    def on_mount(self) -> None:
+        self._update_highlight()
+        if self._input_widget is not None:
+            self._input_widget.focus()
+
+    def on_input_changed(self, event: Input.Changed) -> None:
+        query = event.value.strip().lower()
+        if not query:
+            self.filtered = list(self.all_commands)
+        else:
+            self.filtered = [
+                c for c in self.all_commands
+                if self._matches(c.search_text, query)
+            ]
+        self.highlight_index = 0
+        self._rebuild_rows()
+
+    def _matches(self, haystack: str, needle: str) -> bool:
+        # Simple fuzzy match: all characters of needle must appear in order
+        hi = 0
+        for ch in needle:
+            found = haystack.find(ch, hi)
+            if found == -1:
+                return False
+            hi = found + 1
+        return True
+
+    def _rebuild_rows(self) -> None:
+        for w in self._row_widgets:
+            w.remove()
+        self._row_widgets = []
+        list_widget = self.query_one("#palette-list")
+        for cmd in self.filtered:
+            row = _PaletteRow(cmd)
+            self._row_widgets.append(row)
+            list_widget.mount(row)
+        if self.filtered:
+            self._update_highlight()
+        self.refresh(layout=True)
+
+    def _update_highlight(self) -> None:
+        for i, row in enumerate(self._row_widgets):
+            row.set_highlight(i == self.highlight_index)
+
+    # ── Actions ────────────────────────────────────────────────────────
+
+    def action_dismiss_palette(self) -> None:
+        self.dismiss(None)
+
+    def action_move_up(self) -> None:
+        if not self.filtered:
+            return
+        self.highlight_index = (self.highlight_index - 1) % len(self.filtered)
+        self._update_highlight()
+
+    def action_move_down(self) -> None:
+        if not self.filtered:
+            return
+        self.highlight_index = (self.highlight_index + 1) % len(self.filtered)
+        self._update_highlight()
+
+    def action_select(self) -> None:
+        if not self.filtered:
+            self.dismiss(None)
+            return
+        chosen = self.filtered[self.highlight_index]
+        self.dismiss(chosen.name)
