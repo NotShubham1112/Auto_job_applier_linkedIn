@@ -1,3 +1,11 @@
+"""CLI entrypoint — launches the BROWORK Textual app.
+
+This module is the glue between ``main.py`` and the new Textual-based
+BROWORK experience. The legacy Rich/prompt_toolkit-based chat engine
+in ``chat/engine.py`` is still available as a fallback, but the new
+Textual app is the default.
+"""
+
 from __future__ import annotations
 
 import asyncio
@@ -5,36 +13,9 @@ import logging
 from pathlib import Path
 from typing import Any, Optional
 
-from rich.console import Console
-
-from agents.tracking_agent import TrackingAgent
-from agents.workflow import JobApplicationOrchestrator
-from chat.engine import ChatEngine
-from chat.memory import ConversationMemory
-from chat.router import CommandRouter
-from chat.session import SessionManager
 from config.settings import AppConfig, load_config
 from database.models import init_database
 from database.repository import Repository
-from services.google_sheets_service import GoogleSheetsService
-from services.groq_service import GroqService
-
-# ── Plugins ──
-from plugins.agent_plugin import AgentPlugin
-from plugins.apply_plugin import ApplyPlugin
-from plugins.chat_plugin import ChatPlugin
-from plugins.clear_plugin import ClearPlugin
-from plugins.coverletter_plugin import CoverLetterPlugin
-from plugins.exit_plugin import ExitPlugin
-from plugins.help_plugin import HelpPlugin
-from plugins.history_plugin import HistoryPlugin
-from plugins.interviews_plugin import InterviewsPlugin
-from plugins.jobs_plugin import JobsPlugin
-from plugins.jobhunt_plugin import JobHuntPlugin
-from plugins.resume_plugin import ResumePlugin
-from plugins.search_plugin import SearchPlugin
-from plugins.settings_plugin import SettingsPlugin
-from plugins.status_plugin import StatusPlugin
 
 logger = logging.getLogger(__name__)
 
@@ -42,121 +23,72 @@ logger = logging.getLogger(__name__)
 class InteractiveCLI:
     """Main interactive CLI application.
 
-    Initializes all services, agents, memory, and plugins,
-    then starts the chat engine.
+    The new Textual implementation replaces the older
+    prompt_toolkit-based chat engine. The interface is the same as
+    before so callers (e.g. ``main.py``) don't need to change.
     """
 
     def __init__(self, config: AppConfig) -> None:
         self.config = config
-        self.console = Console()
         self._services_initialized = False
+        self._app: Optional[Any] = None
+        self._repo: Optional[Repository] = None
+        self._db_session: Any = None
 
     def initialize(self) -> None:
-        """Initialize database, agents, services, and plugins."""
-        logger.info("Initializing InteractiveCLI...")
-
-        # ── UTF-8 output for Windows ──
+        """Initialize database and other services that don't need the app."""
         import sys
-        if hasattr(sys.stdout, 'reconfigure'):
-            sys.stdout.reconfigure(encoding='utf-8')
+        if hasattr(sys.stdout, "reconfigure"):
+            sys.stdout.reconfigure(encoding="utf-8")
 
-        # ── Database ──
         Path("data").mkdir(exist_ok=True)
         session_factory = init_database(self.config.database)
         self._db_session = session_factory()
-        self.repo = Repository(self._db_session)
-
-        # ── Candidate Profile ──
-        self.candidate_profile = self._load_candidate_profile()
-
-        # ── Services ──
-        self.groq = GroqService(self.config.ai)
-        self.sheets = GoogleSheetsService(self.config.google_sheets)
-        if self.config.google_sheets.enabled:
-            try:
-                self.sheets.connect()
-            except Exception as e:
-                logger.warning("Google Sheets connection failed: %s", e)
-
-        # ── Orchestrator (reuse services to avoid duplicate init) ──
-        self.orchestrator = JobApplicationOrchestrator(
-            self.config, self.repo, self.candidate_profile,
-            groq=self.groq, sheets=self.sheets,
-        )
-
-        # ── Session & Memory ──
-        self.session_manager = SessionManager()
-        self.memory = ConversationMemory(self.session_manager)
-        self.memory.init_session()
-
-        # ── Router ──
-        self.router = CommandRouter(
-            config=self.config,
-            repo=self.repo,
-            groq=self.groq,
-            orchestrator=self.orchestrator,
-            candidate_profile=self.candidate_profile,
-            memory=self.memory,
-            console=self.console,
-        )
-
-        # ── Register Plugins ──
-        self._register_plugins()
-
+        self._repo = Repository(self._db_session)
         self._services_initialized = True
-        logger.info("InteractiveCLI initialized (session: %s)", self.memory.session_id)
-
-    def _register_plugins(self) -> None:
-        """Register all slash-command plugins."""
-        plugins = [
-            HelpPlugin(),
-            JobHuntPlugin(),
-            SearchPlugin(),
-            ApplyPlugin(),
-            StatusPlugin(),
-            JobsPlugin(),
-            InterviewsPlugin(),
-            ResumePlugin(),
-            CoverLetterPlugin(),
-            SettingsPlugin(),
-            HistoryPlugin(),
-            ClearPlugin(),
-            ExitPlugin(),
-            ChatPlugin(),
-            AgentPlugin(),
-        ]
-        for plugin in plugins:
-            self.router.register(plugin)
+        logger.info("InteractiveCLI services initialized")
 
     async def run_async(self) -> None:
-        """Start the interactive chat loop."""
+        """Start the Textual app."""
         if not self._services_initialized:
             self.initialize()
 
-        engine = ChatEngine(self.router, self.memory, self.config)
+        from cli.textual_app import build_app
+
+        self._app = build_app(config=self.config)
+        if self._repo is not None:
+            self._app.repo = self._repo
+
         try:
-            await engine.run()
+            await self._app.run_async()
         except KeyboardInterrupt:
             logger.info("User interrupted")
         finally:
             self._cleanup()
 
     def run(self) -> None:
-        """Synchronous entry point — creates event loop and runs."""
+        """Synchronous entry point — runs the Textual app."""
+        try:
+            self.run_sync()
+        except KeyboardInterrupt:
+            pass
+
+    def run_sync(self) -> None:
+        """Synchronous entry point that bridges from a sync context."""
         asyncio.run(self.run_async())
 
     def _cleanup(self) -> None:
         """Clean up resources."""
         try:
-            self.orchestrator.close()
+            if self._app is not None and getattr(self._app, "orchestrator", None):
+                self._app.orchestrator.close()
         except Exception:
             pass
         try:
-            self._db_session.close()
+            if self._db_session is not None:
+                self._db_session.close()
         except Exception:
             pass
-        self.console.print()
-        self.console.print("[dim]Session ended. Resources cleaned up.[/dim]")
 
     def _load_candidate_profile(self, path: str = "shubham.md") -> str:
         p = Path(path)

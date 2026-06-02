@@ -55,9 +55,10 @@ class MainScreen(Screen[None]):
     """The main chat screen shown after the boot sequence."""
 
     BINDINGS = [
-        Binding("ctrl+x", "open_palette", "Palette", show=True),
-        Binding("ctrl+c", "quit_app", "Quit", show=True),
-        Binding("ctrl+l", "clear_log", "Clear", show=False),
+        Binding("ctrl+p", "open_palette", "Palette", show=True, priority=True),
+        Binding("ctrl+x", "open_palette", "Palette", show=False, priority=True),
+        Binding("ctrl+c", "quit_app", "Quit", show=True, priority=True),
+        Binding("ctrl+l", "clear_log", "Clear", show=False, priority=True),
         Binding("ctrl+question_mark", "show_help", "Help", show=False),
         Binding("f1", "show_help", "Help", show=False),
     ]
@@ -65,26 +66,28 @@ class MainScreen(Screen[None]):
     DEFAULT_CSS = """
     MainScreen {
         layout: vertical;
-        background: #0a0a0a;
+        background: #000000;
     }
 
     MainScreen #main-header {
         height: 1;
-        background: #141414;
-        color: #f4b183;
+        background: #000000;
+        color: #ffffff;
         text-style: bold;
         padding: 0 2;
-        border-bottom: solid #2a2a2a;
+        border-bottom: solid #3b82f6;
     }
 
     MainScreen #main-content {
         layout: horizontal;
         height: 1fr;
+        background: #000000;
     }
 
     MainScreen #chat-column {
         layout: vertical;
         width: 1fr;
+        background: #000000;
     }
 
     MainScreen #thinking-host {
@@ -98,12 +101,13 @@ class MainScreen(Screen[None]):
 
     MainScreen #log-container {
         height: 1fr;
-        background: #0a0a0a;
+        background: #000000;
+        scrollbar-size: 1 1;
     }
 
     MainScreen #loading-indicator {
         height: 1;
-        color: #f4b183;
+        color: #3b82f6;
         padding: 0 4;
         visibility: hidden;
     }
@@ -113,17 +117,18 @@ class MainScreen(Screen[None]):
     }
 
     MainScreen #loading-spinner {
-        color: #f4b183;
+        color: #f43f5e;
         text-style: bold;
         width: 3;
     }
 
     MainScreen #loading-text {
-        color: #f4b183;
+        color: #3b82f6;
     }
 
     MainScreen #agent-column {
         width: 38;
+        background: #000000;
     }
 
     MainScreen #agent-column.hidden {
@@ -132,26 +137,42 @@ class MainScreen(Screen[None]):
 
     MainScreen #input-area {
         height: auto;
-        background: #141414;
-        border-top: solid #2a2a2a;
+        background: #000000;
+        border-top: solid #3b82f6;
         padding: 0 1;
     }
 
     MainScreen #input-box {
         height: 3;
-        background: #141414;
-        border: tall #f4b183;
+        background: #000000;
+        color: #ffffff;
+        border: tall #3b82f6;
         padding: 0 1;
     }
 
+    MainScreen #input-box:focus {
+        border: tall #f43f5e;
+    }
+
+    MainScreen #input-box > .input--cursor {
+        color: #f43f5e;
+        background: #f43f5e;
+        text-style: bold;
+    }
+
+    MainScreen #input-box > .input--placeholder {
+        color: #ffffff;
+        text-style: italic;
+    }
+
     MainScreen #input-prefix {
-        color: #f4b183;
+        color: #f43f5e;
         text-style: bold;
         width: 3;
     }
 
     MainScreen #input-hint {
-        color: #6a6a6a;
+        color: #ffffff;
         height: 1;
         padding: 0 2;
     }
@@ -173,7 +194,7 @@ class MainScreen(Screen[None]):
         self.memory = memory
 
         # Widget refs (populated in compose)
-        self.log: Optional[StreamingOutput] = None
+        self.chat_output: Optional[StreamingOutput] = None
         self.thinking: Optional[ThinkingBox] = None
         self.thinking_host: Optional[Container] = None
         self.input: Optional[Input] = None
@@ -203,8 +224,8 @@ class MainScreen(Screen[None]):
                     self.thinking = ThinkingBox(id="thinking-box")
                     yield self.thinking
                 with VerticalScroll(id="log-container"):
-                    self.log = StreamingOutput(id="chat-log")
-                    yield self.log
+                    self.chat_output = StreamingOutput(id="chat-log")
+                    yield self.chat_output
                 self.loading_indicator = Horizontal(
                     Static("\u280b", id="loading-spinner"),
                     Static("Thinking...", id="loading-text"),
@@ -297,9 +318,9 @@ class MainScreen(Screen[None]):
     # ── Welcome / status messages ─────────────────────────────────────
 
     def _show_welcome(self) -> None:
-        if self.log is None:
+        if self.chat_output is None:
             return
-        self.log.write_system(
+        self.chat_output.write_system(
             f"{PRODUCT_NAME} ready.  Type /help to see commands, "
             f"or just start typing."
         )
@@ -308,30 +329,33 @@ class MainScreen(Screen[None]):
         from rich.panel import Panel
         from rich.box import ROUNDED
 
-        lines = []
-        lines.append(
-            RichText(
-                " AI Job Hunting Assistant  \u2014  Press ctrl+x for the "
-                "command palette",
-                style=f"bold {PALETTE.primary}",
-            )
+        title = RichText(
+            " AI Job Hunting Assistant  \u2014  Press ctrl+x for the "
+            "command palette",
+            style=f"bold {PALETTE.primary}",
         )
-        # Show a few example commands
-        examples = [
+        body_lines = []
+        for cmd, desc in [
             ("/jobhunt", "Run the full job hunt workflow"),
             ("/search", "Quick job search"),
             ("/status", "Your application statistics"),
             ("/chat", "General career chat mode"),
             ("/agent", "Autonomous agent mode"),
-        ]
-        for cmd, desc in examples:
+        ]:
             line = RichText()
             line.append(f"  {cmd:<12}", style=f"bold {PALETTE.command_color}")
-            line.append(f"  {desc}", style=PALETTE.text_dim)
-            lines.append(line)
-        self.log.write(Padding(Panel(
-            lines[0],
-            subtitle=RichText.join("", lines[1:]) if False else None,
+            line.append(f"  {desc}", style=PALETTE.text)
+            body_lines.append(line)
+
+        body = RichText()
+        body.append_text(title)
+        body.append("\n")
+        for bl in body_lines:
+            body.append_text(bl)
+            body.append("\n")
+
+        self.chat_output.write(Padding(Panel(
+            body,
             border_style=PALETTE.border,
             box=ROUNDED,
             padding=(1, 2),
@@ -352,14 +376,16 @@ class MainScreen(Screen[None]):
         """Dispatch a user input through the router."""
         if self._busy:
             # If we're already busy, queue the input
-            if self.log is not None:
-                self.log.write_system("Busy with previous request — try again in a moment.")
+            if self.chat_output is not None:
+                self.chat_output.write_system(
+                    "Busy with previous request — try again in a moment."
+                )
             return
         self._busy = True
 
         # 1. Echo the user input
-        if self.log is not None:
-            self.log.write_user_echo(text)
+        if self.chat_output is not None:
+            self.chat_output.write_user_echo(text)
 
         # 2. Pre-emptively show the thinking box for slash commands
         if text.startswith("/"):
@@ -380,8 +406,8 @@ class MainScreen(Screen[None]):
             return
         except Exception as e:
             logger.exception("Dispatch failed")
-            if self.log is not None:
-                self.log.write_error(str(e))
+            if self.chat_output is not None:
+                self.chat_output.write_error(str(e))
         finally:
             self._busy = False
             # Hide the thinking box and loading indicator
@@ -395,12 +421,12 @@ class MainScreen(Screen[None]):
     # ── Streaming callbacks ───────────────────────────────────────────
 
     def _on_token(self, token: str) -> None:
-        if self.log is None:
+        if self.chat_output is None:
             return
         # Start the agent block on the very first token
-        if not self.log._active_role:
-            self.log.begin_agent_message()
-        self.log.stream(token)
+        if not self.chat_output._active_role:
+            self.chat_output.begin_agent_message()
+        self.chat_output.stream(token)
         # Approximate token count (rough heuristic: ~4 chars per token)
         self._token_count += max(1, len(token) // 4)
         self._update_status_tokens()
@@ -414,9 +440,9 @@ class MainScreen(Screen[None]):
             self.loading_text.update(message)
 
     def _on_finish(self, full: str) -> None:
-        if self.log is None:
+        if self.chat_output is None:
             return
-        self.log.end_message()
+        self.chat_output.end_message()
         if full:
             self.memory.add_message("assistant", full)
         # Update session timer
@@ -475,8 +501,8 @@ class MainScreen(Screen[None]):
         self.app.exit()
 
     def action_clear_log(self) -> None:
-        if self.log is not None:
-            self.log.clear_log()
+        if self.chat_output is not None:
+            self.chat_output.clear_log()
         self._token_count = 0
         self._update_status_tokens()
 

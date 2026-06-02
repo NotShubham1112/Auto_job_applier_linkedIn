@@ -42,46 +42,50 @@ class _PaletteRow(Static):
     DEFAULT_CSS = """
     _PaletteRow {
         height: 1;
-        color: #9a9a9a;
+        color: #ffffff;
         padding: 0 1;
     }
 
     _PaletteRow.--highlight {
-        background: #2a2a2a;
-        color: #f4b183;
+        background: #3b82f6;
+        color: #ffffff;
         text-style: bold;
     }
 
     _PaletteRow .palette-cmd {
-        color: #e3b341;
+        color: #f43f5e;
         text-style: bold;
     }
 
     _PaletteRow .palette-desc {
-        color: #9a9a9a;
+        color: #ffffff;
     }
     """
 
     def __init__(self, command: PaletteCommand, **kwargs) -> None:
-        super().__init__(**kwargs)
+        # Build the content and pass it via the constructor so the
+        # visual is set up correctly before the widget is mounted.
+        content = self._build_text(command)
+        super().__init__(content, markup=False, **kwargs)
         self.command = command
-        self._render()
 
     def set_highlight(self, on: bool) -> None:
         self.set_class(on, "--highlight")
-        self._render()
+        # Rebuild and update
+        self.update(self._build_text(self.command))
 
-    def _render(self) -> None:
+    @staticmethod
+    def _build_text(command: PaletteCommand) -> Text:
         text = Text()
-        text.append(f" /{self.command.name:<10}", style="bold #e3b341")
+        text.append(f" /{command.name:<10}", style="bold #f43f5e")
         text.append("  ", style="")
-        text.append(self.command.description, style="#9a9a9a")
-        if self.command.aliases:
+        text.append(command.description, style="#ffffff")
+        if command.aliases:
             text.append("  ", style="")
             text.append(
-                f"({', '.join(self.command.aliases)})", style="#6a6a6a"
+                f"({', '.join(command.aliases)})", style="#ffffff"
             )
-        self.update(text)
+        return text
 
 
 class CommandPalette(ModalScreen[Optional[str]]):
@@ -102,20 +106,20 @@ class CommandPalette(ModalScreen[Optional[str]]):
     DEFAULT_CSS = """
     CommandPalette {
         align: center middle;
-        background: rgba(0, 0, 0, 70%);
+        background: #000000;
     }
 
     CommandPalette #palette-container {
         width: 70;
         height: auto;
         max-height: 24;
-        background: #141414;
-        border: round #f4b183;
+        background: #000000;
+        border: round #3b82f6;
         padding: 1 1;
     }
 
     CommandPalette #palette-title {
-        color: #f4b183;
+        color: #3b82f6;
         text-style: bold;
         height: 1;
         padding: 0 1;
@@ -123,22 +127,33 @@ class CommandPalette(ModalScreen[Optional[str]]):
 
     CommandPalette #palette-input {
         height: 3;
-        background: #0a0a0a;
-        border: tall #2a2a2a;
+        background: #000000;
+        color: #ffffff;
+        border: tall #3b82f6;
         margin: 1 0;
         padding: 0 1;
+    }
+
+    CommandPalette #palette-input:focus {
+        border: tall #f43f5e;
+    }
+
+    CommandPalette #palette-input > .input--placeholder {
+        color: #ffffff;
+        text-style: italic;
     }
 
     CommandPalette #palette-list {
         height: auto;
         max-height: 16;
-        background: #0a0a0a;
-        border: round #2a2a2a;
+        background: #000000;
+        border: round #3b82f6;
         padding: 0 1;
+        scrollbar-size: 1 1;
     }
 
     CommandPalette #palette-hint {
-        color: #6a6a6a;
+        color: #ffffff;
         height: 1;
         padding: 0 1;
         margin-top: 1;
@@ -187,6 +202,10 @@ class CommandPalette(ModalScreen[Optional[str]]):
             ]
         self.highlight_index = 0
         self._rebuild_rows()
+
+    def on_input_submitted(self, event: Input.Submitted) -> None:
+        """When the user presses Enter in the search input, select."""
+        self.action_select()
 
     def _matches(self, haystack: str, needle: str) -> bool:
         # Simple fuzzy match: all characters of needle must appear in order

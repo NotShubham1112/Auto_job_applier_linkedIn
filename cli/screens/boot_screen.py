@@ -62,14 +62,14 @@ class _BootLine(Static):
             self.set_class(state == cls, cls)
         text = Text()
         if state == "done":
-            text.append("  [+] ", style="#7ee787")
-            text.append(self.label, style="#7ee787")
+            text.append("  [+] ", style="#3b82f6")
+            text.append(self.label, style="#3b82f6")
         elif state == "active":
-            text.append("  [~] ", style="#f4b183")
-            text.append(self.label, style="bold #f4b183")
+            text.append("  [~] ", style="#ffffff")
+            text.append(self.label, style="bold #ffffff")
         else:
-            text.append("  [ ] ", style="#6a6a6a")
-            text.append(self.label, style="#6a6a6a")
+            text.append("  [ ] ", style="#ffffff")
+            text.append(self.label, style="#ffffff")
         self.update(text)
 
 
@@ -82,7 +82,7 @@ class BootScreen(Screen[None]):
 
     DEFAULT_CSS = """
     BootScreen {
-        background: #0a0a0a;
+        background: #000000;
         align: center middle;
     }
 
@@ -93,20 +93,20 @@ class BootScreen(Screen[None]):
     }
 
     BootScreen #boot-logo {
-        color: #f4b183;
+        color: #3b82f6;
         text-style: bold;
         width: auto;
         content-align: center middle;
     }
 
     BootScreen #boot-tagline {
-        color: #9a9a9a;
+        color: #ffffff;
         text-align: center;
         padding: 1 0;
     }
 
     BootScreen #boot-version {
-        color: #6a6a6a;
+        color: #ffffff;
         text-align: center;
         padding: 0 0 1 0;
     }
@@ -118,13 +118,13 @@ class BootScreen(Screen[None]):
     }
 
     BootScreen #boot-status {
-        color: #58a6ff;
+        color: #ffffff;
         text-align: center;
         padding: 1 0 0 0;
     }
 
     BootScreen #boot-ready {
-        color: #7ee787;
+        color: #f43f5e;
         text-align: center;
         text-style: bold;
         padding: 1 0 0 0;
@@ -207,10 +207,7 @@ class BootScreen(Screen[None]):
 
         # Hand off to the main screen
         if hasattr(self.app, "transition_to_main"):
-            try:
-                self.app.transition_to_main()
-                return
-            except Exception:
-                pass
+            self.app.transition_to_main()
+            return
         # Fallback: just pop this screen
         self.app.pop_screen()

@@ -12,41 +12,52 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class OpenCodePalette:
-    """OpenCode-inspired terminal palette.
+    """Clean professional palette — blue / white / red-rose on black.
 
-    Mirrors the warm-on-dark scheme used by OpenCode, Claude Code,
-    Gemini CLI, and Warp Terminal AI panels.
+    Only four colors are used in the entire UI:
+      - Pure black background
+      - White text and panels
+      - Blue (primary, focus, brand)
+      - Red rose (accent, alerts, highlights)
+
+    No intermediate grays, no dim text — everything is high contrast
+    so it renders identically across every terminal.
     """
 
-    background: str = "#0a0a0a"
-    surface: str = "#141414"
-    panel: str = "#1a1a1a"
-    border: str = "#2a2a2a"
-    border_strong: str = "#3a3a3a"
+    # Pure black surfaces
+    background: str = "#000000"
+    surface: str = "#000000"
+    panel: str = "#000000"
+    border: str = "#3b82f6"
+    border_strong: str = "#3b82f6"
 
-    accent: str = "#f4b183"
-    primary: str = "#f4b183"
-    secondary: str = "#58a6ff"
-    success: str = "#7ee787"
-    info: str = "#58a6ff"
-    warning: str = "#e3b341"
-    error: str = "#ff6b6b"
-    danger: str = "#f85149"
+    # The three brand colors
+    primary: str = "#3b82f6"        # blue
+    accent: str = "#f43f5e"         # red rose
+    secondary: str = "#ffffff"      # white
 
-    text: str = "#e6e6e6"
-    text_dim: str = "#9a9a9a"
-    text_muted: str = "#6a6a6a"
+    # Semantic aliases (still in the 3-color family)
+    success: str = "#3b82f6"        # blue
+    info: str = "#3b82f6"           # blue
+    warning: str = "#f43f5e"        # red rose
+    error: str = "#f43f5e"          # red rose
+    danger: str = "#f43f5e"         # red rose
 
-    highlight: str = "#f4b183"
-    selection: str = "#2a2a2a"
+    # Text — all white, no dim variants
+    text: str = "#ffffff"
+    text_dim: str = "#ffffff"
+    text_muted: str = "#ffffff"
 
-    user_color: str = "#f4b183"
-    agent_color: str = "#7ee787"
-    command_color: str = "#e3b341"
+    highlight: str = "#f43f5e"
+    selection: str = "#3b82f6"
 
-    spinner: str = "#f4b183"
-    progress_filled: str = "#f4b183"
-    progress_empty: str = "#2a2a2a"
+    user_color: str = "#ffffff"
+    agent_color: str = "#3b82f6"
+    command_color: str = "#f43f5e"
+
+    spinner: str = "#3b82f6"
+    progress_filled: str = "#3b82f6"
+    progress_empty: str = "#ffffff"
 
 
 PALETTE = OpenCodePalette()

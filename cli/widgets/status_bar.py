@@ -29,24 +29,24 @@ class StatusCell(Static):
     StatusCell {
         height: 1;
         padding: 0 2;
-        color: #9a9a9a;
+        color: #ffffff;
     }
 
     StatusCell.accent {
-        color: #f4b183;
+        color: #f43f5e;
         text-style: bold;
     }
 
     StatusCell.success {
-        color: #7ee787;
+        color: #3b82f6;
     }
 
     StatusCell.info {
-        color: #58a6ff;
+        color: #3b82f6;
     }
 
     StatusCell.warning {
-        color: #e3b341;
+        color: #f43f5e;
     }
     """
 
@@ -64,7 +64,7 @@ class StatusCell(Static):
 
     def _render(self) -> Text:
         text = Text()
-        text.append(f"{self._label}: ", style="#6a6a6a")
+        text.append(f"{self._label}: ", style="#ffffff")
         text.append(self._value, style="")
         return text
 
@@ -100,10 +100,10 @@ class StatusBar(Horizontal):
     StatusBar {
         dock: bottom;
         height: 1;
-        background: #141414;
-        color: #9a9a9a;
+        background: #000000;
+        color: #ffffff;
         padding: 0 1;
-        border-top: solid #2a2a2a;
+        border-top: solid #3b82f6;
     }
     """
 

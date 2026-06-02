@@ -45,11 +45,11 @@ AGENT_STATUS_LABELS: dict[str, str] = {
 }
 
 AGENT_STATUS_STYLES: dict[str, str] = {
-    AGENT_PENDING: "#6a6a6a",
-    AGENT_RUNNING: "#7ee787",
-    AGENT_WAITING: "#6a6a6a",
-    AGENT_DONE: "#58a6ff",
-    AGENT_ERROR: "#ff6b6b",
+    AGENT_PENDING: "#ffffff",
+    AGENT_RUNNING: "#3b82f6",
+    AGENT_WAITING: "#ffffff",
+    AGENT_DONE: "#ffffff",
+    AGENT_ERROR: "#f43f5e",
 }
 
 # Default agent icons by name (the spec uses 🔍 ⚙️ 🎨 🧪)
@@ -87,28 +87,28 @@ class AgentRow(Static):
     DEFAULT_CSS = """
     AgentRow {
         height: 1;
-        color: #9a9a9a;
+        color: #ffffff;
         padding: 0 1;
     }
 
     AgentRow.running {
-        color: #7ee787;
+        color: #3b82f6;
     }
 
     AgentRow.waiting {
-        color: #6a6a6a;
+        color: #ffffff;
     }
 
     AgentRow.done {
-        color: #58a6ff;
+        color: #ffffff;
     }
 
     AgentRow.error {
-        color: #ff6b6b;
+        color: #f43f5e;
     }
 
     AgentRow.pending {
-        color: #6a6a6a;
+        color: #ffffff;
     }
     """
 
@@ -136,12 +136,12 @@ class AgentRow(Static):
         text.append(f" {icon} ", style="")
         text.append(f"{self.agent.name:<22}", style="")
         if self.agent.detail:
-            text.append(f"{self.agent.detail:<14}", style="#6a6a6a")
+            text.append(f"{self.agent.detail:<14}", style="#ffffff")
         else:
             text.append(" " * 14, style="")
         text.append(
             AGENT_STATUS_LABELS.get(self.agent.status, "?"),
-            style=AGENT_STATUS_STYLES.get(self.agent.status, "#6a6a6a"),
+            style=AGENT_STATUS_STYLES.get(self.agent.status, "#ffffff"),
         )
         self.update(text)
 
@@ -156,18 +156,17 @@ class AgentBoard(Vertical):
 
     DEFAULT_CSS = """
     AgentBoard {
-        background: #0f0f0f;
-        border-left: solid #2a2a2a;
+        background: #000000;
         height: 1fr;
         padding: 1 1;
     }
 
     AgentBoard #agent-board-title {
-        color: #f4b183;
+        color: #ffffff;
         text-style: bold;
         height: 1;
         padding: 0 1;
-        border-bottom: solid #2a2a2a;
+        border-bottom: solid #3b82f6;
         margin-bottom: 1;
     }
     """
@@ -182,9 +181,12 @@ class AgentBoard(Vertical):
         **kwargs,
     ) -> None:
         super().__init__(**kwargs)
-        self.agents = list(agents or [])
+        # Initialize internal state BEFORE setting reactives so that
+        # watchers don't crash if they fire on init.
         self._title_widget: Optional[Static] = None
         self._row_widgets: list[AgentRow] = []
+        self.agents = list(agents or [])
+        self._title = title
 
     def compose(self):
         self._title_widget = Static(
@@ -208,6 +210,8 @@ class AgentBoard(Vertical):
 
     def watch_agents(self, _old: list[AgentEntry], new: list[AgentEntry]) -> None:
         """Re-render rows when the agents list changes."""
+        if not hasattr(self, "_row_widgets"):
+            return
         # Remove all existing rows from the DOM
         for row in self._row_widgets:
             row.remove()

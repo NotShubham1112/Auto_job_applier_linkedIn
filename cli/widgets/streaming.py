@@ -32,9 +32,11 @@ class StreamingOutput(RichLog):
 
     DEFAULT_CSS = """
     StreamingOutput {
-        background: #0a0a0a;
+        background: #000000;
+        color: #ffffff;
         padding: 1 2;
         scrollbar-gutter: stable;
+        scrollbar-size: 1 1;
     }
     """
 
@@ -95,7 +97,7 @@ class StreamingOutput(RichLog):
         """Write a dim system message (info, help, errors)."""
         self.end_message()
         self.write(Padding(
-            Text(text, style=PALETTE.text_dim),
+            Text(text, style=PALETTE.text),
             (0, 0, 1, 0),
         ))
 
@@ -133,14 +135,9 @@ class StreamingOutput(RichLog):
         self.write(Padding(header, (1, 0, 0, 2)))
 
     def _write_markdown(self, content: str) -> None:
-        """Write the given content rendered as Markdown.
-
-        We clear the last markdown line and re-render it to create the
-        streaming effect without leaving dozens of stale renders.
-        """
+        """Write the given content rendered as Markdown."""
         try:
             md = Markdown(content, code_theme="monokai", inline_mode_breaks=True)
-            # Wrap in a padding so the content indents nicely
             from rich.panel import Panel
             from rich.box import ROUNDED
 
@@ -154,7 +151,6 @@ class StreamingOutput(RichLog):
                 (0, 0, 0, 2),
             ))
         except Exception:
-            # If Markdown fails for any reason, fall back to plain text
             self.write(Padding(
                 Text(content, style=PALETTE.text),
                 (0, 0, 0, 2),

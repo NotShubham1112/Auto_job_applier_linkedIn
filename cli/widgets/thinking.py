@@ -62,42 +62,42 @@ class ThinkingBox(Vertical):
 
     DEFAULT_CSS = """
     ThinkingBox {
-        background: #141414;
-        border: round #2a2a2a;
+        background: #000000;
+        border: round #3b82f6;
         height: auto;
         margin: 1 0;
         padding: 0 1;
     }
 
     ThinkingBox #thinking-title {
-        color: #f4b183;
+        color: #3b82f6;
         text-style: bold;
         height: 1;
         padding: 0 1;
-        border-bottom: solid #2a2a2a;
+        border-bottom: solid #3b82f6;
     }
 
     ThinkingBox .thinking-step {
         height: 1;
-        color: #6a6a6a;
+        color: #ffffff;
         padding: 0 1;
     }
 
     ThinkingBox .thinking-step.running {
-        color: #f4b183;
+        color: #ffffff;
         text-style: bold;
     }
 
     ThinkingBox .thinking-step.done {
-        color: #7ee787;
+        color: #3b82f6;
     }
 
     ThinkingBox .thinking-step.error {
-        color: #ff6b6b;
+        color: #f43f5e;
     }
 
     ThinkingBox .thinking-step.pending {
-        color: #6a6a6a;
+        color: #ffffff;
     }
 
     ThinkingBox .step-icon {
@@ -117,10 +117,13 @@ class ThinkingBox(Vertical):
         **kwargs,
     ) -> None:
         super().__init__(**kwargs)
-        self.steps = [ThinkingStep(label=s) for s in (steps or [])]
-        self.title_text = title
+        # Initialize internal state BEFORE setting reactives so that
+        # the watcher (if it fires on init) doesn't crash.
         self._title_widget: Static | None = None
         self._step_widgets: list[Static] = []
+        # Now set the reactives
+        self.steps = [ThinkingStep(label=s) for s in (steps or [])]
+        self.title_text = title
 
     def compose(self):
         from textual.containers import Container
@@ -134,17 +137,19 @@ class ThinkingBox(Vertical):
             yield w
 
     def watch_title_text(self, _old: str, _new: str) -> None:
-        if self._title_widget is not None:
+        if hasattr(self, "_title_widget") and self._title_widget is not None:
             self._title_widget.update(self._render_title())
 
     def watch_steps(self, _old: list[ThinkingStep], _new: list[ThinkingStep]) -> None:
         """Refresh all step widgets when the steps list mutates."""
+        if not hasattr(self, "_step_widgets") or not self._step_widgets:
+            return
         for i, widget in enumerate(self._step_widgets):
-            if i < len(self._new):
-                widget.set_class(self._new[i].status == STEP_RUNNING, "running")
-                widget.set_class(self._new[i].status == STEP_DONE, "done")
-                widget.set_class(self._new[i].status == STEP_ERROR, "error")
-                widget.set_class(self._new[i].status == STEP_PENDING, "pending")
+            if i < len(_new):
+                widget.set_class(_new[i].status == STEP_RUNNING, "running")
+                widget.set_class(_new[i].status == STEP_DONE, "done")
+                widget.set_class(_new[i].status == STEP_ERROR, "error")
+                widget.set_class(_new[i].status == STEP_PENDING, "pending")
                 widget.update(self._render_step(i))
             else:
                 widget.display = False
@@ -228,7 +233,7 @@ class ThinkingBox(Vertical):
         widget.update(self._render_step(index))
 
     def _render_title(self) -> Text:
-        return Text(f" {self.title_text} ", style="bold #f4b183")
+        return Text(f" {self.title_text} ", style="bold #3b82f6")
 
     def _render_step(self, index: int) -> Text:
         step = self.steps[index]
@@ -237,22 +242,22 @@ class ThinkingBox(Vertical):
         text.append(f" {icon} ", style=self._icon_style(step.status))
         text.append(step.label, style=self._label_style(step.status))
         if step.detail:
-            text.append(f"  {step.detail}", style="#6a6a6a")
+            text.append(f"  {step.detail}", style="#ffffff")
         return text
 
     def _icon_style(self, status: str) -> str:
         return {
-            STEP_PENDING: "#6a6a6a",
-            STEP_RUNNING: "#f4b183",
-            STEP_DONE: "#7ee787",
-            STEP_ERROR: "#ff6b6b",
-        }.get(status, "#6a6a6a")
+            STEP_PENDING: "#ffffff",
+            STEP_RUNNING: "#f43f5e",
+            STEP_DONE: "#3b82f6",
+            STEP_ERROR: "#f43f5e",
+        }.get(status, "#ffffff")
 
     def _label_style(self, status: str) -> str:
         if status == STEP_RUNNING:
-            return "bold #f4b183"
+            return "bold #ffffff"
         if status == STEP_DONE:
-            return "#7ee787"
+            return "#3b82f6"
         if status == STEP_ERROR:
-            return "#ff6b6b"
-        return "#6a6a6a"
+            return "#f43f5e"
+        return "#ffffff"

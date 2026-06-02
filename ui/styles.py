@@ -4,23 +4,25 @@ from rich.style import Style
 from rich.theme import Theme
 from rich.color import Color
 
-# ── Color palette ──────────────────────────────────────────────────────────
+# ── BROWORK color palette (blue / white / red-rose on black) ─────────────
+# Matches the Textual app's palette so any Rich-console output from
+# existing plugins (tables, panels, etc.) stays consistent.
 class Palette:
-    PRIMARY = "#00FFAA"
-    SECONDARY = "#00AAFF"
-    ACCENT = "#FF6B6B"
-    WARNING = "#FFD93D"
-    SUCCESS = "#6BCB77"
-    ERROR = "#FF4757"
-    INFO = "#5352ED"
-    MUTED = "#636E72"
-    DARK = "#2D3436"
-    BG = "#1A1A2E"
-    SURFACE = "#16213E"
-    TEXT = "#EAEAEA"
-    TEXT_DIM = "#A0A0B0"
-    LINK = "#74B9FF"
-    HIGHLIGHT = "#FFEAA7"
+    PRIMARY = "#3b82f6"        # blue
+    SECONDARY = "#ffffff"      # white
+    ACCENT = "#f43f5e"         # red rose
+    WARNING = "#f43f5e"
+    SUCCESS = "#3b82f6"
+    ERROR = "#f43f5e"
+    INFO = "#3b82f6"
+    MUTED = "#ffffff"
+    DARK = "#000000"
+    BG = "#000000"
+    SURFACE = "#000000"
+    TEXT = "#ffffff"
+    TEXT_DIM = "#ffffff"
+    LINK = "#3b82f6"
+    HIGHLIGHT = "#f43f5e"
 
 CUSTOM_THEME = Theme({
     "primary": Style(color=Palette.PRIMARY),
@@ -43,13 +45,13 @@ CUSTOM_THEME = Theme({
     "dim": Style(color=Palette.TEXT_DIM),
     "link": Style(color=Palette.LINK, underline=True),
     "highlight": Style(color=Palette.HIGHLIGHT),
-    "agent": Style(color=Palette.SECONDARY, bold=True),
-    "user": Style(color=Palette.ACCENT, bold=True),
-    "command": Style(color=Palette.WARNING, bold=True),
-    "score.high": Style(color=Palette.SUCCESS, bold=True),
-    "score.mid": Style(color=Palette.WARNING),
-    "score.low": Style(color=Palette.ERROR),
-    "border": Style(color=Palette.MUTED, dim=True),
+    "agent": Style(color=Palette.PRIMARY, bold=True),
+    "user": Style(color="#ffffff", bold=True),
+    "command": Style(color=Palette.ACCENT, bold=True),
+    "score.high": Style(color=Palette.PRIMARY, bold=True),
+    "score.mid": Style(color=Palette.ACCENT),
+    "score.low": Style(color=Palette.ACCENT),
+    "border": Style(color=Palette.PRIMARY, dim=True),
 })
 
 HEADER = """
@@ -63,4 +65,4 @@ STATUS_TEMPLATE = """
  {groq} Groq Connected
  {linkedin} LinkedIn Connected
  {resume} Resume Loaded
-"""
+ """

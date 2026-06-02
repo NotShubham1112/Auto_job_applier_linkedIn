@@ -25,58 +25,58 @@ class HelpScreen(ModalScreen[None]):
     DEFAULT_CSS = """
     HelpScreen {
         align: center middle;
-        background: rgba(0, 0, 0, 70%);
+        background: #000000;
     }
 
     HelpScreen #help-content {
         width: 80;
         height: auto;
         max-height: 80%;
-        background: #141414;
-        border: round #f4b183;
+        background: #000000;
+        border: round #3b82f6;
         padding: 1 2;
     }
 
     HelpScreen #help-title {
-        color: #f4b183;
+        color: #ffffff;
         text-style: bold;
         height: 1;
         padding: 0 0 1 0;
-        border-bottom: solid #2a2a2a;
+        border-bottom: solid #3b82f6;
         margin-bottom: 1;
     }
 
     HelpScreen #help-scroll {
         height: auto;
         max-height: 50;
+        scrollbar-size: 1 1;
     }
 
     HelpScreen .help-section-title {
-        color: #f4b183;
+        color: #3b82f6;
         text-style: bold;
         padding: 1 0 0 0;
     }
 
     HelpScreen .help-row {
         height: 1;
-        color: #9a9a9a;
+        color: #ffffff;
     }
 
     HelpScreen .help-row .help-cmd {
-        color: #e3b341;
+        color: #f43f5e;
         text-style: bold;
         width: 18;
     }
 
     HelpScreen .help-row .help-desc {
-        color: #9a9a9a;
+        color: #ffffff;
     }
 
     HelpScreen #help-hint {
-        color: #6a6a6a;
-        height: 1;
-        padding: 1 0 0 0;
+        color: #ffffff;
         text-align: center;
+        padding: 1 0 0 0;
     }
     """
 
@@ -121,12 +121,12 @@ class HelpScreen(ModalScreen[None]):
 
     def _render_row(self, cmd: PaletteCommand) -> Text:
         text = Text()
-        text.append(f"  /{cmd.name:<14}", style="bold #e3b341")
+        text.append(f"  /{cmd.name:<14}", style="bold #f43f5e")
         text.append("  ", style="")
-        text.append(cmd.description, style="#9a9a9a")
+        text.append(cmd.description, style="#ffffff")
         if cmd.aliases:
             text.append(
-                f"   ({', '.join(cmd.aliases)})", style="#6a6a6a"
+                f"   ({', '.join(cmd.aliases)})", style="#ffffff"
             )
         return text
 
