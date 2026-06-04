@@ -1,0 +1,419 @@
+[
+  {
+    "company": "Anthropic",
+    "domain": "anthropic.com",
+    "focus": "LLMs, Claude, AI Safety",
+    "career_urls": [
+      "/careers",
+      "/jobs"
+    ],
+    "hiring_signals": "Always hiring engineers",
+    "stage": "Series D"
+  },
+  {
+    "company": "OpenAI",
+    "domain": "openai.com",
+    "focus": "LLMs, GPT, AI Products",
+    "career_urls": [
+      "/careers"
+    ],
+    "hiring_signals": "Rapid expansion",
+    "stage": "Series D"
+  },
+  {
+    "company": "Mistral AI",
+    "domain": "mistral.ai",
+    "focus": "Open source LLMs",
+    "career_urls": [
+      "/careers",
+      "/jobs"
+    ],
+    "hiring_signals": "EU-based, open source focus",
+    "stage": "Series B"
+  },
+  {
+    "company": "Together AI",
+    "domain": "together.ai",
+    "focus": "Distributed LLM inference",
+    "career_urls": [
+      "/careers",
+      "/jobs"
+    ],
+    "hiring_signals": "Infrastructure play",
+    "stage": "Series B"
+  },
+  {
+    "company": "Hugging Face",
+    "domain": "huggingface.co",
+    "focus": "ML models, datasets, inference",
+    "career_urls": [
+      "/jobs",
+      "/careers"
+    ],
+    "hiring_signals": "Remote-first, strong engineering culture",
+    "stage": "Series D"
+  },
+  {
+    "company": "Modal",
+    "domain": "modal.com",
+    "focus": "Serverless AI/ML infrastructure",
+    "career_urls": [
+      "/careers",
+      "/jobs"
+    ],
+    "hiring_signals": "Technical founder team",
+    "stage": "Series B"
+  },
+  {
+    "company": "Replicate",
+    "domain": "replicate.com",
+    "focus": "ML model hosting",
+    "career_urls": [
+      "/careers",
+      "/jobs"
+    ],
+    "hiring_signals": "Simple, elegant product",
+    "stage": "Series B"
+  },
+  {
+    "company": "Fireworks AI",
+    "domain": "fireworks.ai",
+    "focus": "LLM inference optimization",
+    "career_urls": [
+      "/careers",
+      "/jobs"
+    ],
+    "hiring_signals": "Fast inference provider",
+    "stage": "Series A+"
+  },
+  {
+    "company": "Databricks",
+    "domain": "databricks.com",
+    "focus": "Data + AI platform",
+    "career_urls": [
+      "/careers",
+      "/company/careers"
+    ],
+    "hiring_signals": "Large, well-funded",
+    "stage": "Series J"
+  },
+  {
+    "company": "Weights & Biases",
+    "domain": "wandb.ai",
+    "focus": "ML experiment tracking",
+    "career_urls": [
+      "/careers",
+      "/jobs"
+    ],
+    "hiring_signals": "MLOps/DevTools",
+    "stage": "Series C"
+  },
+  {
+    "company": "Retool",
+    "domain": "retool.com",
+    "focus": "Low-code internal tools",
+    "career_urls": [
+      "/careers",
+      "/jobs"
+    ],
+    "hiring_signals": "Strong revenue, remote-first",
+    "stage": "Series B"
+  },
+  {
+    "company": "Make (Integromat)",
+    "domain": "make.com",
+    "focus": "AI-powered automation",
+    "career_urls": [
+      "/careers",
+      "/jobs"
+    ],
+    "hiring_signals": "Millions of users",
+    "stage": "Series C"
+  },
+  {
+    "company": "n8n",
+    "domain": "n8n.io",
+    "focus": "Open source workflow automation",
+    "career_urls": [
+      "/careers",
+      "/jobs"
+    ],
+    "hiring_signals": "Open source + commercial",
+    "stage": "Series B"
+  },
+  {
+    "company": "Zapier",
+    "domain": "zapier.com",
+    "focus": "Automation, AI agents",
+    "career_urls": [
+      "/careers",
+      "/jobs"
+    ],
+    "hiring_signals": "Profitable, remote-first",
+    "stage": "Private"
+  },
+  {
+    "company": "Langchain",
+    "domain": "langchain.com",
+    "focus": "LLM application framework",
+    "career_urls": [
+      "/careers",
+      "/jobs"
+    ],
+    "hiring_signals": "Developer tools",
+    "stage": "Series C"
+  },
+  {
+    "company": "Vercel",
+    "domain": "vercel.com",
+    "focus": "Frontend AI deployment",
+    "career_urls": [
+      "/careers",
+      "/jobs"
+    ],
+    "hiring_signals": "Next.js, AI-forward",
+    "stage": "Series E"
+  },
+  {
+    "company": "Weaviate",
+    "domain": "weaviate.io",
+    "focus": "Vector database",
+    "career_urls": [
+      "/careers",
+      "/jobs"
+    ],
+    "hiring_signals": "Open source + commercial",
+    "stage": "Series B"
+  },
+  {
+    "company": "Pinecone",
+    "domain": "pinecone.io",
+    "focus": "Vector DB as a service",
+    "career_urls": [
+      "/careers",
+      "/jobs"
+    ],
+    "hiring_signals": "Strong product-market fit",
+    "stage": "Series B"
+  },
+  {
+    "company": "Qdrant",
+    "domain": "qdrant.tech",
+    "focus": "Vector search engine",
+    "career_urls": [
+      "/careers",
+      "/jobs"
+    ],
+    "hiring_signals": "Open source + SaaS",
+    "stage": "Series A"
+  },
+  {
+    "company": "Perplexity AI",
+    "domain": "perplexity.ai",
+    "focus": "AI search engine",
+    "career_urls": [
+      "/careers",
+      "/jobs"
+    ],
+    "hiring_signals": "Well-funded, viral growth",
+    "stage": "Series B"
+  },
+  {
+    "company": "You.com",
+    "domain": "you.com",
+    "focus": "Private AI search",
+    "career_urls": [
+      "/careers",
+      "/jobs"
+    ],
+    "hiring_signals": "Privacy-focused search",
+    "stage": "Series B"
+  },
+  {
+    "company": "Gpt4All",
+    "domain": "gpt4all.io",
+    "focus": "Local AI models",
+    "career_urls": [
+      "/careers",
+      "/jobs"
+    ],
+    "hiring_signals": "Open source",
+    "stage": "Open Source"
+  },
+  {
+    "company": "LlamaIndex",
+    "domain": "llamaindex.ai",
+    "focus": "Data framework for LLMs",
+    "career_urls": [
+      "/careers",
+      "/jobs"
+    ],
+    "hiring_signals": "Developer tools",
+    "stage": "Series A"
+  },
+  {
+    "company": "CrewAI",
+    "domain": "crewai.com",
+    "focus": "Multi-agent orchestration",
+    "career_urls": [
+      "/careers",
+      "/jobs"
+    ],
+    "hiring_signals": "Growing fast",
+    "stage": "Series A"
+  },
+  {
+    "company": "Bubble",
+    "domain": "bubble.io",
+    "focus": "No-code + AI",
+    "career_urls": [
+      "/careers",
+      "/jobs"
+    ],
+    "hiring_signals": "Strong founder, remote",
+    "stage": "Series C"
+  },
+  {
+    "company": "Supabase",
+    "domain": "supabase.com",
+    "focus": "Open source Firebase, AI features",
+    "career_urls": [
+      "/careers",
+      "/jobs"
+    ],
+    "hiring_signals": "Strong dev community",
+    "stage": "Series B"
+  },
+  {
+    "company": "Plane",
+    "domain": "plane.so",
+    "focus": "Open source project management + AI",
+    "career_urls": [
+      "/careers",
+      "/jobs"
+    ],
+    "hiring_signals": "India-founded",
+    "stage": "Series A"
+  },
+  {
+    "company": "Replit",
+    "domain": "replit.com",
+    "focus": "AI-powered IDE",
+    "career_urls": [
+      "/careers",
+      "/jobs"
+    ],
+    "hiring_signals": "Strong founder (Amasad)",
+    "stage": "Series C"
+  },
+  {
+    "company": "Codeium",
+    "domain": "codeium.com",
+    "focus": "AI code completion",
+    "career_urls": [
+      "/careers",
+      "/jobs"
+    ],
+    "hiring_signals": "Dev tools, fast growth",
+    "stage": "Series A"
+  },
+  {
+    "company": "GitHub Copilot",
+    "domain": "github.com",
+    "focus": "AI programming",
+    "career_urls": [
+      "/careers",
+      "/jobs"
+    ],
+    "hiring_signals": "Part of Microsoft",
+    "stage": "Mature"
+  },
+  {
+    "company": "Eleven Labs",
+    "domain": "elevenlabs.io",
+    "focus": "AI voice synthesis",
+    "career_urls": [
+      "/careers",
+      "/jobs"
+    ],
+    "hiring_signals": "Strong product",
+    "stage": "Series B"
+  },
+  {
+    "company": "Stability AI",
+    "domain": "stability.ai",
+    "focus": "Image generation models",
+    "career_urls": [
+      "/careers",
+      "/jobs"
+    ],
+    "hiring_signals": "Well-funded",
+    "stage": "Series C"
+  },
+  {
+    "company": "Scale AI",
+    "domain": "scale.com",
+    "focus": "AI data labeling",
+    "career_urls": [
+      "/careers",
+      "/jobs"
+    ],
+    "hiring_signals": "Infrastructure play",
+    "stage": "Series D"
+  },
+  {
+    "company": "Dust",
+    "domain": "dust.tt",
+    "focus": "AI workflow for teams",
+    "career_urls": [
+      "/careers",
+      "/jobs"
+    ],
+    "hiring_signals": "YC, founder-friendly",
+    "stage": "Series A"
+  },
+  {
+    "company": "Relevance AI",
+    "domain": "relevanceai.com",
+    "focus": "AI workflows + agents",
+    "career_urls": [
+      "/careers",
+      "/jobs"
+    ],
+    "hiring_signals": "Building builders",
+    "stage": "Series A"
+  },
+  {
+    "company": "Skyvern",
+    "domain": "skyvern.com",
+    "focus": "AI automation for browser",
+    "career_urls": [
+      "/careers",
+      "/jobs"
+    ],
+    "hiring_signals": "YC, RPA + AI",
+    "stage": "Series A"
+  },
+  {
+    "company": "Bearly AI",
+    "domain": "bearly.ai",
+    "focus": "AI content tools",
+    "career_urls": [
+      "/careers",
+      "/jobs"
+    ],
+    "hiring_signals": "Chrome extension + API",
+    "stage": "Series A"
+  },
+  {
+    "company": "Airtable",
+    "domain": "airtable.com",
+    "focus": "No-code DB with AI",
+    "career_urls": [
+      "/careers",
+      "/jobs"
+    ],
+    "hiring_signals": "Strong product",
+    "stage": "Series C"
+  }
+]
