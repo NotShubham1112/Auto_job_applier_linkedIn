@@ -1,8 +1,11 @@
-"""BROWORK theme palette — OpenCode / Vim / Warp inspired colors.
+"""BROWORK theme palette — minimal aesthetic.
 
 Centralizes colors used by every Textual/Rich component so the look
 stays consistent across the boot sequence, panels, status bar, and
 streaming output.
+
+Design: extremely minimal. No borders, no box-drawing, no decorative
+elements. Clean spacing and typography hierarchy only.
 """
 
 from __future__ import annotations
@@ -12,16 +15,15 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class OpenCodePalette:
-    """Clean professional palette — blue / white / red-rose on black.
+    """Minimal palette — blue / white / red-rose on black.
 
     Only four colors are used in the entire UI:
       - Pure black background
-      - White text and panels
-      - Blue (primary, focus, brand)
-      - Red rose (accent, alerts, highlights)
+      - White text
+      - Blue (primary, brand)
+      - Red rose (accent, alerts)
 
-    No intermediate grays, no dim text — everything is high contrast
-    so it renders identically across every terminal.
+    One additional dim color for muted text hierarchy.
     """
 
     # Pure black surfaces
@@ -32,21 +34,21 @@ class OpenCodePalette:
     border_strong: str = "#3b82f6"
 
     # The three brand colors
-    primary: str = "#3b82f6"        # blue
-    accent: str = "#f43f5e"         # red rose
-    secondary: str = "#ffffff"      # white
+    primary: str = "#3b82f6"
+    accent: str = "#f43f5e"
+    secondary: str = "#ffffff"
 
-    # Semantic aliases (still in the 3-color family)
-    success: str = "#3b82f6"        # blue
-    info: str = "#3b82f6"           # blue
-    warning: str = "#f43f5e"        # red rose
-    error: str = "#f43f5e"          # red rose
-    danger: str = "#f43f5e"         # red rose
+    # Semantic aliases
+    success: str = "#3b82f6"
+    info: str = "#3b82f6"
+    warning: str = "#f43f5e"
+    error: str = "#f43f5e"
+    danger: str = "#f43f5e"
 
-    # Text — all white, no dim variants
+    # Text hierarchy
     text: str = "#ffffff"
-    text_dim: str = "#ffffff"
-    text_muted: str = "#ffffff"
+    text_dim: str = "#666666"
+    text_muted: str = "#444444"
 
     highlight: str = "#f43f5e"
     selection: str = "#3b82f6"
@@ -81,7 +83,7 @@ BOOT_PHASES: list[tuple[str, str]] = [
 ]
 
 
-# ── Rotating loading messages (OpenCode style) ─────────────────────────────
+# ── Rotating loading messages ─────────────────────────────────────────────
 
 LOADING_MESSAGES: list[str] = [
     "Cooking solution...",
@@ -101,13 +103,13 @@ LOADING_MESSAGES: list[str] = [
 ]
 
 
-# ── Spinner frames (opencode-style) ────────────────────────────────────────
+# ── Spinner frames ────────────────────────────────────────────────────────
 
 SPINNER_FRAMES: list[str] = ["\u280b", "\u2819", "\u2838", "\u2834",
                               "\u2826", "\u2827", "\u2807", "\u280f"]
 
 
-# ── Progress bar characters (opencode-style) ──────────────────────────────
+# ── Progress bar characters ──────────────────────────────────────────────
 
 PROGRESS_FRAMES: list[str] = [
     "[\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591]",
@@ -132,27 +134,11 @@ SCAN_FRAMES: list[str] = [
 ]
 
 
-# ── Box-drawing characters for custom borders ─────────────────────────────
+# ── Matrix rain characters ─────────────────────────────────────────────────
 
-ROUNDED_BORDER: dict[str, str] = {
-    "top": "\u256d",
-    "bottom": "\u256e",
-    "left": "\u2502",
-    "right": "\u2502",
-    "top_left": "\u256d",
-    "top_right": "\u256e",
-    "bottom_left": "\u2570",
-    "bottom_right": "\u256f",
-}
-
-
-HEAVY_BORDER: dict[str, str] = {
-    "top": "\u2501",
-    "bottom": "\u2501",
-    "left": "\u2503",
-    "right": "\u2503",
-    "top_left": "\u250f",
-    "top_right": "\u2513",
-    "bottom_left": "\u2517",
-    "bottom_right": "\u251b",
-}
+MATRIX_CHARS: list[str] = [
+    "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+    "A", "B", "C", "D", "E", "F",
+    "\u30a0", "\u30a1", "\u30a2", "\u30a3", "\u30a4",
+    "\u30a5", "\u30a6", "\u30a7", "\u30a8", "\u30a9",
+]

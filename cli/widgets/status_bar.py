@@ -1,16 +1,17 @@
 """StatusBar widget — bottom status line with model/tokens/mode info.
 
 Displays cells like:
-    MODEL: Claude-4 │ TOKENS: 15K │ COST: $0.08 │ PLAN MODE
+    BROWORK v1.0.0  model  tokens  cost  ...  memory  session
 
 Cells are reactive and can be updated individually.
+Design: minimal. No borders, muted colors, thin separators.
 """
 
 from __future__ import annotations
 
 from typing import Optional
 
-from rich.text import Text
+from rich.text import Text as RichText
 from textual.containers import Horizontal
 from textual.reactive import reactive
 from textual.widgets import Static
@@ -19,17 +20,13 @@ from cli.styles.palette import PALETTE, PRODUCT_NAME, PRODUCT_VERSION
 
 
 class StatusCell(Static):
-    """A single cell in the status bar.
-
-    The cell is a small Static widget. It can have one of a few
-    visual styles ('accent', 'success', 'info', 'warning').
-    """
+    """A single cell in the status bar."""
 
     DEFAULT_CSS = """
     StatusCell {
         height: 1;
-        padding: 0 2;
-        color: #ffffff;
+        padding: 0 1;
+        color: #666666;
     }
 
     StatusCell.accent {
@@ -57,19 +54,18 @@ class StatusCell(Static):
         self._style = style
         if style:
             self.add_class(style)
+        self.update(self._build_text())
 
     def set_value(self, value: str) -> None:
         self._value = value
-        self.update(self._render())
+        self.update(self._build_text())
 
-    def _render(self) -> Text:
-        text = Text()
-        text.append(f"{self._label}: ", style="#ffffff")
+    def _build_text(self) -> RichText:
+        text = RichText()
+        if self._label:
+            text.append(f"{self._label} ", style=PALETTE.text_muted)
         text.append(self._value, style="")
         return text
-
-    def on_mount(self) -> None:
-        self.update(self._render())
 
 
 class StatusSpacer(Static):
@@ -90,10 +86,9 @@ class StatusBar(Horizontal):
     """The bottom status bar of the BROWORK app.
 
     Layout (left to right):
-        MODEL | TOKENS | COST | MODE   ...spacer...   MCP | MEMORY | SESSION
+        BRAND  model  tokens  cost  ...  memory  session
 
-    Cells are exposed as named attributes for easy updates from the
-    app: ``self.status_bar.model.set_value("Claude-4")``.
+    Cells are exposed as named attributes for easy updates.
     """
 
     DEFAULT_CSS = """
@@ -101,9 +96,8 @@ class StatusBar(Horizontal):
         dock: bottom;
         height: 1;
         background: #000000;
-        color: #ffffff;
-        padding: 0 1;
-        border-top: solid #3b82f6;
+        color: #666666;
+        padding: 0 2;
     }
     """
 
@@ -130,34 +124,28 @@ class StatusBar(Horizontal):
     def compose(self):
         self.brand_cell = StatusCell("", self.brand, classes="accent")
         yield self.brand_cell
-        yield StatusCell("", "│", classes="")
 
-        self.model = StatusCell("MODEL", self.model_name, classes="accent")
+        self.model = StatusCell("model", self.model_name, classes="info")
         yield self.model
-        yield StatusCell("", "│")
 
-        self.tokens_cell = StatusCell("TOKENS", self.tokens)
+        self.tokens_cell = StatusCell("tokens", self.tokens)
         yield self.tokens_cell
-        yield StatusCell("", "│")
 
-        self.cost_cell = StatusCell("COST", self.cost)
+        self.cost_cell = StatusCell("cost", self.cost)
         yield self.cost_cell
-        yield StatusCell("", "│")
 
-        self.mode_cell = StatusCell("MODE", self.mode, classes="info")
+        self.mode_cell = StatusCell("mode", self.mode, classes="info")
         yield self.mode_cell
 
         yield StatusSpacer()
 
-        self.memory_cell = StatusCell("MEMORY", self.memory, classes="success")
+        self.memory_cell = StatusCell("memory", self.memory, classes="success")
         yield self.memory_cell
-        yield StatusCell("", "│")
 
-        self.mcp_cell = StatusCell("MCP", self.mcp)
+        self.mcp_cell = StatusCell("mcp", self.mcp)
         yield self.mcp_cell
-        yield StatusCell("", "│")
 
-        self.session_cell = StatusCell("SESSION", self.session)
+        self.session_cell = StatusCell("session", self.session)
         yield self.session_cell
 
     # ── Reactive watchers ──────────────────────────────────────────────

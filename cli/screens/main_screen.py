@@ -1,7 +1,7 @@
 """MainScreen — the post-boot chat screen.
 
 Layout (vertical stack, top-to-bottom):
-  1. Header bar (brand + session info)
+  1. Header bar (brand + version, minimal)
   2. Content (horizontal split):
      - left: ThinkingBox + StreamingOutput (chat log)
      - right: AgentBoard
@@ -12,6 +12,8 @@ Key bindings:
   ctrl+x — open command palette
   ctrl+c — exit
   ctrl+l — clear log
+
+Design: minimal. No borders, no decorative elements.
 """
 
 from __future__ import annotations
@@ -72,10 +74,8 @@ class MainScreen(Screen[None]):
     MainScreen #main-header {
         height: 1;
         background: #000000;
-        color: #ffffff;
-        text-style: bold;
+        color: #666666;
         padding: 0 2;
-        border-bottom: solid #3b82f6;
     }
 
     MainScreen #main-content {
@@ -107,7 +107,7 @@ class MainScreen(Screen[None]):
 
     MainScreen #loading-indicator {
         height: 1;
-        color: #3b82f6;
+        color: #666666;
         padding: 0 4;
         visibility: hidden;
     }
@@ -117,13 +117,12 @@ class MainScreen(Screen[None]):
     }
 
     MainScreen #loading-spinner {
-        color: #f43f5e;
-        text-style: bold;
+        color: #3b82f6;
         width: 3;
     }
 
     MainScreen #loading-text {
-        color: #3b82f6;
+        color: #666666;
     }
 
     MainScreen #agent-column {
@@ -138,20 +137,23 @@ class MainScreen(Screen[None]):
     MainScreen #input-area {
         height: auto;
         background: #000000;
-        border-top: solid #3b82f6;
-        padding: 0 1;
+        padding: 1 2 0 2;
+    }
+
+    MainScreen #input-row {
+        height: 3;
+        background: #000000;
     }
 
     MainScreen #input-box {
         height: 3;
         background: #000000;
         color: #ffffff;
-        border: tall #3b82f6;
         padding: 0 1;
     }
 
     MainScreen #input-box:focus {
-        border: tall #f43f5e;
+        color: #ffffff;
     }
 
     MainScreen #input-box > .input--cursor {
@@ -161,20 +163,20 @@ class MainScreen(Screen[None]):
     }
 
     MainScreen #input-box > .input--placeholder {
-        color: #ffffff;
-        text-style: italic;
+        color: #444444;
     }
 
     MainScreen #input-prefix {
-        color: #f43f5e;
+        color: #3b82f6;
         text-style: bold;
         width: 3;
+        padding: 1 0 0 0;
     }
 
     MainScreen #input-hint {
-        color: #ffffff;
+        color: #444444;
         height: 1;
-        padding: 0 2;
+        padding: 0 0;
     }
     """
 
@@ -210,11 +212,10 @@ class MainScreen(Screen[None]):
     # ── Compose ────────────────────────────────────────────────────────
 
     def compose(self) -> ComposeResult:
-        # Header
+        # Header — minimal, just brand + version in muted color
         with Horizontal(id="main-header"):
             yield Static(
-                f"  {PRODUCT_NAME}  \u2022  AI Engineering Workspace  "
-                f"\u2022  v{PRODUCT_VERSION}",
+                f"{PRODUCT_NAME}  v{PRODUCT_VERSION}",
             )
 
         with Horizontal(id="main-content"):
@@ -239,9 +240,9 @@ class MainScreen(Screen[None]):
                 self.agent_board = AgentBoard()
                 yield self.agent_board
 
-        # Input area
+        # Input area — clean, no borders
         with Vertical(id="input-area"):
-            with Horizontal():
+            with Horizontal(id="input-row"):
                 yield Static("\u276f", id="input-prefix")
                 self.input = Input(
                     placeholder="Ask anything, or type / for commands",
@@ -249,9 +250,7 @@ class MainScreen(Screen[None]):
                 )
                 yield self.input
             yield Static(
-                "enter send  \u2022  / for commands  \u2022  "
-                "ctrl+x palette  \u2022  ctrl+l clear  \u2022  "
-                "ctrl+c quit",
+                "enter send  / commands  ctrl+x palette  ctrl+l clear  ctrl+c quit",
                 id="input-hint",
             )
 
@@ -294,7 +293,6 @@ class MainScreen(Screen[None]):
         model_name = getattr(
             self.config.ai.groq_model, "value", str(self.config.ai.groq_model)
         )
-        # Shorten for display
         short = model_name.split("/")[-1] if "/" in model_name else model_name
         self.status_bar.model_name = short
 
@@ -324,17 +322,12 @@ class MainScreen(Screen[None]):
             f"{PRODUCT_NAME} ready.  Type /help to see commands, "
             f"or just start typing."
         )
-        from rich.padding import Padding
+        # Render welcome as clean text, no panel wrapper
         from rich.text import Text as RichText
-        from rich.panel import Panel
-        from rich.box import ROUNDED
 
-        title = RichText(
-            " AI Job Hunting Assistant  \u2014  Press ctrl+x for the "
-            "command palette",
-            style=f"bold {PALETTE.primary}",
-        )
-        body_lines = []
+        body = RichText()
+        body.append(" AI Job Hunting Assistant\n", style=f"bold {PALETTE.primary}")
+        body.append("\n")
         for cmd, desc in [
             ("/jobhunt", "Run the full job hunt workflow"),
             ("/search", "Quick job search"),
@@ -342,24 +335,15 @@ class MainScreen(Screen[None]):
             ("/chat", "General career chat mode"),
             ("/agent", "Autonomous agent mode"),
         ]:
-            line = RichText()
-            line.append(f"  {cmd:<12}", style=f"bold {PALETTE.command_color}")
-            line.append(f"  {desc}", style=PALETTE.text)
-            body_lines.append(line)
+            body.append(f"  {cmd:<12}", style=f"bold {PALETTE.command_color}")
+            body.append(f"  {desc}\n", style=PALETTE.text_dim)
 
-        body = RichText()
-        body.append_text(title)
         body.append("\n")
-        for bl in body_lines:
-            body.append_text(bl)
-            body.append("\n")
+        body.append(
+            "  ctrl+x for command palette", style=PALETTE.text_muted
+        )
 
-        self.chat_output.write(Padding(Panel(
-            body,
-            border_style=PALETTE.border,
-            box=ROUNDED,
-            padding=(1, 2),
-        ), (0, 2, 1, 2)))
+        self.chat_output.write(body)
 
     # ── Input handling ────────────────────────────────────────────────
 
@@ -367,15 +351,12 @@ class MainScreen(Screen[None]):
         text = event.value.strip()
         if not text:
             return
-        # Clear the input field for the next message
         event.input.value = ""
-        # Schedule the dispatch as a worker so the UI can refresh
         self.run_worker(self._dispatch(text), exclusive=True)
 
     async def _dispatch(self, text: str) -> None:
         """Dispatch a user input through the router."""
         if self._busy:
-            # If we're already busy, queue the input
             if self.chat_output is not None:
                 self.chat_output.write_system(
                     "Busy with previous request — try again in a moment."
@@ -410,7 +391,6 @@ class MainScreen(Screen[None]):
                 self.chat_output.write_error(str(e))
         finally:
             self._busy = False
-            # Hide the thinking box and loading indicator
             if self.thinking is not None:
                 self.thinking.display = False
                 self.thinking_host_display(False)
@@ -423,11 +403,9 @@ class MainScreen(Screen[None]):
     def _on_token(self, token: str) -> None:
         if self.chat_output is None:
             return
-        # Start the agent block on the very first token
         if not self.chat_output._active_role:
             self.chat_output.begin_agent_message()
         self.chat_output.stream(token)
-        # Approximate token count (rough heuristic: ~4 chars per token)
         self._token_count += max(1, len(token) // 4)
         self._update_status_tokens()
 
@@ -445,7 +423,6 @@ class MainScreen(Screen[None]):
         self.chat_output.end_message()
         if full:
             self.memory.add_message("assistant", full)
-        # Update session timer
         self._update_status_session()
 
     # ── Loading indicator helpers ─────────────────────────────────────
@@ -490,7 +467,6 @@ class MainScreen(Screen[None]):
 
         def _on_dismiss(result: Optional[str]) -> None:
             if result:
-                # Put the command into the input box
                 if self.input is not None:
                     self.input.value = f"/{result} "
                     self.input.focus()

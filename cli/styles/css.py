@@ -1,11 +1,12 @@
-"""BROWORK Textual CSS — clean professional, black background.
+"""BROWORK Textual CSS — minimal aesthetic.
 
-Color rules:
-  - Background: pure black #000000 everywhere
-  - Text: white #ffffff
-  - Primary: blue #3b82f6
-  - Accent: red rose #f43f5e
-  - All scrollbars: width 1 (thin)
+Design principles:
+  - No borders, no box-drawing, no decorative elements
+  - Whitespace and alignment only
+  - Typography hierarchy via color and weight
+  - Pure black background everywhere
+  - Blue for primary/brand, red-rose for accent/alerts
+  - Responsive to terminal size
 """
 
 
@@ -29,69 +30,62 @@ Screen {
     layers: base overlay modal;
 }
 
-#app-grid {
-    layout: vertical;
-    height: 100%;
+/* ── Boot screen ───────────────────────────────────────────────────── */
+
+BootScreen {
+    background: #000000;
+    align: center middle;
 }
 
-/* ── Boot / Loading screen ────────────────────────────────────────── */
-
-#boot-screen {
+#boot-container {
+    width: auto;
+    height: auto;
     align: center middle;
+}
+
+#boot-matrix {
+    width: 100%;
+    height: 100%;
+    color: #3b82f6;
     background: #000000;
 }
 
 #boot-logo {
-    width: auto;
-    height: auto;
     color: #3b82f6;
     text-style: bold;
+    width: auto;
+    content-align: center middle;
 }
 
 #boot-tagline {
     color: #ffffff;
     text-align: center;
-    padding: 1 0;
+    padding: 1 0 0 0;
 }
 
 #boot-version {
-    color: #ffffff;
+    color: #666666;
     text-align: center;
     padding: 0 0 1 0;
 }
 
 #boot-list {
-    width: 50;
+    width: auto;
     height: auto;
-    padding: 1 2;
-}
-
-#boot-list > .boot-line {
-    height: 1;
-    color: #ffffff;
-}
-
-#boot-list > .boot-line.done {
-    color: #3b82f6;
-    text-style: bold;
-}
-
-#boot-list > .boot-line.active {
-    color: #ffffff;
-    text-style: bold;
+    padding: 1 0;
 }
 
 #boot-status {
-    color: #ffffff;
+    color: #666666;
     text-align: center;
-    padding: 1 0;
+    padding: 1 0 0 0;
 }
 
 #boot-ready {
     color: #f43f5e;
     text-align: center;
     text-style: bold;
-    padding: 1 0;
+    padding: 1 0 0 0;
     height: 1;
     visibility: hidden;
 }
@@ -100,9 +94,9 @@ Screen {
     visibility: visible;
 }
 
-/* ── Main chat screen ─────────────────────────────────────────────── */
+/* ── Main screen ───────────────────────────────────────────────────── */
 
-#main-screen {
+MainScreen {
     layout: vertical;
     background: #000000;
 }
@@ -110,10 +104,8 @@ Screen {
 #main-header {
     height: 1;
     background: #000000;
-    color: #ffffff;
-    text-style: bold;
+    color: #666666;
     padding: 0 2;
-    border-bottom: solid #3b82f6;
 }
 
 #main-content {
@@ -126,41 +118,105 @@ Screen {
     layout: vertical;
     width: 1fr;
     background: #000000;
-    border-right: solid #3b82f6;
+}
+
+#thinking-host {
+    height: auto;
+    padding: 0 2;
+}
+
+#thinking-host.hidden {
+    display: none;
+}
+
+#log-container {
+    height: 1fr;
+    background: #000000;
+    scrollbar-size: 1 1;
+}
+
+#loading-indicator {
+    height: 1;
+    color: #666666;
+    padding: 0 4;
+    visibility: hidden;
+}
+
+#loading-indicator.visible {
+    visibility: visible;
+}
+
+#loading-spinner {
+    color: #3b82f6;
+    width: 3;
+}
+
+#loading-text {
+    color: #666666;
 }
 
 #agent-column {
     width: 38;
-    layout: vertical;
     background: #000000;
-    border-left: solid #3b82f6;
 }
 
 #agent-column.hidden {
     display: none;
 }
 
-#chat-log {
+/* ── Input area ────────────────────────────────────────────────────── */
+
+#input-area {
+    height: auto;
     background: #000000;
-    color: #ffffff;
-    padding: 1 2;
-    scrollbar-gutter: stable;
-    scrollbar-size: 1 1;
+    padding: 1 2 0 2;
 }
 
-#chat-log > * {
-    margin-bottom: 1;
+#input-row {
+    height: 3;
+    background: #000000;
 }
+
+#input-box {
+    height: 3;
+    background: #000000;
+    color: #ffffff;
+    padding: 0 1;
+}
+
+#input-box:focus {
+    color: #ffffff;
+}
+
+#input-box > .input--cursor {
+    color: #f43f5e;
+    background: #f43f5e;
+    text-style: bold;
+}
+
+#input-box > .input--placeholder {
+    color: #444444;
+}
+
+#input-prefix {
+    color: #3b82f6;
+    text-style: bold;
+    width: 3;
+    padding: 1 0 0 0;
+}
+
+#input-hint {
+    color: #444444;
+    height: 1;
+    padding: 0 0;
+}
+
+/* ── Chat message styles ───────────────────────────────────────────── */
 
 .chat-user {
     color: #ffffff;
     text-style: bold;
     margin-top: 1;
-}
-
-.chat-user .chat-user-arrow {
-    color: #f43f5e;
-    text-style: bold;
 }
 
 .chat-agent {
@@ -176,38 +232,33 @@ Screen {
 
 .chat-error {
     color: #f43f5e;
-    background: #000000;
-    border: round #f43f5e;
-    padding: 1 2;
+    padding: 0 0;
 }
 
 .chat-system {
-    color: #ffffff;
-    padding: 1 0;
+    color: #666666;
+    padding: 0 0;
 }
 
-/* ── Thinking box ─────────────────────────────────────────────────── */
+/* ── Thinking box ──────────────────────────────────────────────────── */
 
 ThinkingBox {
     background: #000000;
-    border: round #3b82f6;
     height: auto;
-    margin: 1 0;
-    padding: 0 1;
+    margin: 0 0;
+    padding: 0 0;
 }
 
 #thinking-title {
-    color: #3b82f6;
-    text-style: bold;
+    color: #666666;
     height: 1;
-    padding: 0 1;
-    border-bottom: solid #3b82f6;
+    padding: 0 0;
 }
 
 .thinking-step {
     height: 1;
-    color: #ffffff;
-    padding: 0 1;
+    color: #666666;
+    padding: 0 0;
 }
 
 .thinking-step.running {
@@ -220,7 +271,11 @@ ThinkingBox {
 }
 
 .thinking-step.pending {
-    color: #ffffff;
+    color: #666666;
+}
+
+.thinking-step.error {
+    color: #f43f5e;
 }
 
 .thinking-step .step-icon {
@@ -236,10 +291,10 @@ ThinkingBox {
 }
 
 .thinking-step.pending .step-icon {
-    color: #ffffff;
+    color: #444444;
 }
 
-/* ── Agent board ──────────────────────────────────────────────────── */
+/* ── Agent board ───────────────────────────────────────────────────── */
 
 AgentBoard {
     background: #000000;
@@ -248,18 +303,16 @@ AgentBoard {
 }
 
 #agent-board-title {
-    color: #ffffff;
-    text-style: bold;
+    color: #666666;
     height: 1;
-    padding: 0 1;
-    border-bottom: solid #3b82f6;
+    padding: 0 0;
     margin-bottom: 1;
 }
 
 .agent-row {
     height: 1;
-    color: #ffffff;
-    padding: 0 1;
+    color: #666666;
+    padding: 0 0;
 }
 
 .agent-row.running {
@@ -267,11 +320,19 @@ AgentBoard {
 }
 
 .agent-row.waiting {
-    color: #ffffff;
+    color: #666666;
+}
+
+.agent-row.done {
+    color: #666666;
 }
 
 .agent-row.error {
     color: #f43f5e;
+}
+
+.agent-row.pending {
+    color: #666666;
 }
 
 .agent-row .agent-icon {
@@ -283,7 +344,7 @@ AgentBoard {
 }
 
 .agent-row .agent-status {
-    color: #ffffff;
+    color: #666666;
     text-style: bold;
 }
 
@@ -292,95 +353,26 @@ AgentBoard {
 }
 
 .agent-row.waiting .agent-status {
-    color: #ffffff;
+    color: #666666;
 }
 
 .agent-row.done .agent-status {
-    color: #ffffff;
+    color: #666666;
 }
 
-/* ── Loading indicator ────────────────────────────────────────────── */
-
-#loading-indicator {
-    height: 1;
-    color: #3b82f6;
-    padding: 0 2;
-    visibility: hidden;
-}
-
-#loading-indicator.visible {
-    visibility: visible;
-}
-
-#loading-spinner {
-    color: #f43f5e;
-    text-style: bold;
-    width: 3;
-}
-
-#loading-text {
-    color: #3b82f6;
-}
-
-/* ── Input area ───────────────────────────────────────────────────── */
-
-#input-area {
-    height: auto;
-    background: #000000;
-    border-top: solid #3b82f6;
-    padding: 0 1;
-}
-
-#input-box {
-    height: 3;
-    background: #000000;
-    color: #ffffff;
-    border: tall #3b82f6;
-    padding: 0 1;
-}
-
-#input-box:focus {
-    border: tall #f43f5e;
-}
-
-#input-box > .input--cursor {
-    color: #f43f5e;
-    background: #f43f5e;
-    text-style: bold;
-}
-
-#input-box > .input--placeholder {
-    color: #ffffff;
-    text-style: italic;
-}
-
-#input-prefix {
-    color: #f43f5e;
-    text-style: bold;
-    width: 3;
-    padding: 1 0 0 1;
-}
-
-#input-hint {
-    color: #ffffff;
-    height: 1;
-    padding: 0 2;
-}
-
-/* ── Status bar ───────────────────────────────────────────────────── */
+/* ── Status bar ────────────────────────────────────────────────────── */
 
 #status-bar {
     dock: bottom;
     height: 1;
     background: #000000;
-    color: #ffffff;
+    color: #666666;
     padding: 0 2;
-    border-top: solid #3b82f6;
 }
 
 #status-bar > .status-cell {
-    padding: 0 2;
-    color: #ffffff;
+    padding: 0 1;
+    color: #666666;
 }
 
 #status-bar > .status-cell.accent {
@@ -404,11 +396,11 @@ AgentBoard {
     width: 1fr;
 }
 
-/* ── Command palette (modal) ──────────────────────────────────────── */
+/* ── Command palette (modal) ───────────────────────────────────────── */
 
-#palette-screen {
+CommandPalette {
     align: center middle;
-    background: #000000;
+    background: #000000EE;
 }
 
 #palette-container {
@@ -416,43 +408,43 @@ AgentBoard {
     height: auto;
     max-height: 24;
     background: #000000;
-    border: round #3b82f6;
-    padding: 1 1;
+    padding: 1 0;
 }
 
 #palette-title {
-    color: #3b82f6;
-    text-style: bold;
+    color: #666666;
     height: 1;
-    padding: 0 1;
+    padding: 0 2;
 }
 
 #palette-input {
     height: 3;
     background: #000000;
     color: #ffffff;
-    border: tall #3b82f6;
-    margin: 1 0;
+    margin: 0 2;
     padding: 0 1;
 }
 
 #palette-input:focus {
-    border: tall #f43f5e;
+    color: #ffffff;
+}
+
+#palette-input > .input--placeholder {
+    color: #444444;
 }
 
 #palette-list {
     height: auto;
     max-height: 16;
     background: #000000;
-    border: round #3b82f6;
-    padding: 0 1;
+    padding: 0 0;
     scrollbar-size: 1 1;
 }
 
 .palette-item {
     height: 1;
-    color: #ffffff;
-    padding: 0 1;
+    color: #666666;
+    padding: 0 2;
 }
 
 .palette-item.--highlight {
@@ -468,21 +460,22 @@ AgentBoard {
 }
 
 .palette-item .palette-desc {
-    color: #ffffff;
+    color: #666666;
     padding-left: 2;
 }
 
 #palette-hint {
-    color: #ffffff;
+    color: #444444;
     height: 1;
-    padding: 0 1;
+    padding: 0 2;
     margin-top: 1;
 }
 
-/* ── Help modal ───────────────────────────────────────────────────── */
+/* ── Help modal ────────────────────────────────────────────────────── */
 
-.help-modal {
+HelpScreen {
     align: center middle;
+    background: #000000EE;
 }
 
 #help-content {
@@ -490,7 +483,6 @@ AgentBoard {
     height: auto;
     max-height: 80%;
     background: #000000;
-    border: round #3b82f6;
     padding: 1 2;
 }
 
@@ -499,8 +491,13 @@ AgentBoard {
     text-style: bold;
     height: 1;
     padding: 0 0 1 0;
-    border-bottom: solid #3b82f6;
     margin-bottom: 1;
+}
+
+#help-scroll {
+    height: auto;
+    max-height: 50;
+    scrollbar-size: 1 1;
 }
 
 .help-section-title {
@@ -511,7 +508,7 @@ AgentBoard {
 
 .help-row {
     height: 1;
-    color: #ffffff;
+    color: #666666;
 }
 
 .help-row .help-cmd {
@@ -521,11 +518,11 @@ AgentBoard {
 }
 
 .help-row .help-desc {
-    color: #ffffff;
+    color: #666666;
 }
 
 #help-hint {
-    color: #ffffff;
+    color: #444444;
     text-align: center;
     padding: 1 0 0 0;
 }

@@ -1,8 +1,9 @@
 """StreamingOutput widget — markdown-aware streaming text area.
 
-The widget accumulates an incoming string and renders it through
-Rich's Markdown renderer as new content arrives. It auto-scrolls
-to the bottom on each update.
+Renders streamed content as Markdown without decorative wrappers.
+Auto-scrolls to the bottom on each update.
+
+Design: minimal. No borders, no panels, no decorative elements.
 """
 
 from __future__ import annotations
@@ -24,10 +25,7 @@ class StreamingOutput(RichLog):
     ``end_message()`` to finalize the block.
 
     The widget keeps the raw accumulated text per-block and re-renders
-    the markdown for the active block on each push. This gives a nice
-    "typing into a rendered document" feel.
-
-    Auto-scrolls to the bottom on every update.
+    the markdown for the active block on each push.
     """
 
     DEFAULT_CSS = """
@@ -61,7 +59,7 @@ class StreamingOutput(RichLog):
         self._active_buffer = text
         self._render_role_header("user")
         if text:
-            self.write(Padding(Text(text, style=PALETTE.text), (0, 4, 0, 2)))
+            self.write(Padding(Text(text, style=PALETTE.text), (0, 0, 0, 2)))
 
     def begin_agent_message(self, text: str = "") -> None:
         """Start an agent message block."""
@@ -79,7 +77,6 @@ class StreamingOutput(RichLog):
             self.begin_agent_message()
         self._active_buffer += chunk
         if self._active_role == "user":
-            # Don't render user input as markdown
             return
         self._write_markdown(self._active_buffer)
 
@@ -88,16 +85,15 @@ class StreamingOutput(RichLog):
         if self._active_role is None:
             return
         if self._active_role == "agent" and self._active_buffer:
-            # Final render of the markdown
             self._write_markdown(self._active_buffer)
         self._active_role = None
         self._active_buffer = ""
 
     def write_system(self, text: str) -> None:
-        """Write a dim system message (info, help, errors)."""
+        """Write a dim system message."""
         self.end_message()
         self.write(Padding(
-            Text(text, style=PALETTE.text),
+            Text(text, style=PALETTE.text_dim),
             (0, 0, 1, 0),
         ))
 
@@ -105,7 +101,7 @@ class StreamingOutput(RichLog):
         """Write an error block."""
         self.end_message()
         self.write(Padding(
-            Text(f"\u2717 {text}", style=f"bold {PALETTE.error}"),
+            Text(f"\u2717  {text}", style=f"bold {PALETTE.error}"),
             (1, 0, 1, 0),
         ))
 
@@ -113,8 +109,8 @@ class StreamingOutput(RichLog):
         """Write the user input echo above the agent response."""
         self.end_message()
         header = Text()
-        header.append("\u276f ", style=f"bold {PALETTE.user_color}")
-        header.append("You", style=f"bold {PALETTE.user_color}")
+        header.append("\u276f ", style=f"bold {PALETTE.primary}")
+        header.append("You", style=f"bold {PALETTE.text}")
         self.write(Padding(header, (1, 0, 0, 2)))
         self.write(Padding(
             Text(text, style=PALETTE.text),
@@ -126,8 +122,8 @@ class StreamingOutput(RichLog):
     def _render_role_header(self, role: str) -> None:
         if role == "user":
             header = Text()
-            header.append("\u276f ", style=f"bold {PALETTE.user_color}")
-            header.append("You", style=f"bold {PALETTE.user_color}")
+            header.append("\u276f ", style=f"bold {PALETTE.primary}")
+            header.append("You", style=f"bold {PALETTE.text}")
         else:
             header = Text()
             header.append("\u25cf ", style=f"bold {PALETTE.agent_color}")
@@ -135,21 +131,10 @@ class StreamingOutput(RichLog):
         self.write(Padding(header, (1, 0, 0, 2)))
 
     def _write_markdown(self, content: str) -> None:
-        """Write the given content rendered as Markdown."""
+        """Write the given content rendered as Markdown, no wrapper."""
         try:
             md = Markdown(content, code_theme="monokai", inline_mode_breaks=True)
-            from rich.panel import Panel
-            from rich.box import ROUNDED
-
-            self.write(Padding(
-                Panel(
-                    md,
-                    border_style=PALETTE.border,
-                    box=ROUNDED,
-                    padding=(0, 1),
-                ),
-                (0, 0, 0, 2),
-            ))
+            self.write(Padding(md, (0, 0, 0, 2)))
         except Exception:
             self.write(Padding(
                 Text(content, style=PALETTE.text),

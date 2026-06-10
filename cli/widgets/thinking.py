@@ -1,18 +1,13 @@
-"""ThinkingBox widget — animated multi-step "thinking" panel.
+"""ThinkingBox widget — animated multi-step "thinking" indicator.
 
 Shows a list of sub-tasks the agent is performing, each with a status
-icon (●, ✓, ○). The widget is reactive: callers can add steps, mark
-them running, mark them done, and Textual will re-render the panel.
+icon (○, ●, ✓, ✗). Minimal design: no borders, just text hierarchy.
 
 Example:
-    ┌─────────────────────────────────────╮
-    │ Thinking                            │
-    ├─────────────────────────────────────┤
-    │ ● Reading files                     │
-    │ ● Searching docs                    │
-    │ ● Creating plan                     │
-    │ ○ Generating answer                 │
-    └─────────────────────────────────────╯
+    Thinking
+      ● Reading files
+      ✓ Searching docs
+      ○ Creating plan
 """
 
 from __future__ import annotations
@@ -24,6 +19,8 @@ from rich.text import Text
 from textual.containers import Vertical
 from textual.reactive import reactive
 from textual.widgets import Static
+
+from cli.styles.palette import PALETTE
 
 
 # ── Step model ─────────────────────────────────────────────────────────────
@@ -63,24 +60,21 @@ class ThinkingBox(Vertical):
     DEFAULT_CSS = """
     ThinkingBox {
         background: #000000;
-        border: round #3b82f6;
         height: auto;
-        margin: 1 0;
-        padding: 0 1;
+        margin: 0 0;
+        padding: 0 0;
     }
 
     ThinkingBox #thinking-title {
-        color: #3b82f6;
-        text-style: bold;
+        color: #666666;
         height: 1;
-        padding: 0 1;
-        border-bottom: solid #3b82f6;
+        padding: 0 0;
     }
 
     ThinkingBox .thinking-step {
         height: 1;
-        color: #ffffff;
-        padding: 0 1;
+        color: #666666;
+        padding: 0 0;
     }
 
     ThinkingBox .thinking-step.running {
@@ -97,7 +91,7 @@ class ThinkingBox(Vertical):
     }
 
     ThinkingBox .thinking-step.pending {
-        color: #ffffff;
+        color: #666666;
     }
 
     ThinkingBox .step-icon {
@@ -117,17 +111,12 @@ class ThinkingBox(Vertical):
         **kwargs,
     ) -> None:
         super().__init__(**kwargs)
-        # Initialize internal state BEFORE setting reactives so that
-        # the watcher (if it fires on init) doesn't crash.
         self._title_widget: Static | None = None
         self._step_widgets: list[Static] = []
-        # Now set the reactives
         self.steps = [ThinkingStep(label=s) for s in (steps or [])]
         self.title_text = title
 
     def compose(self):
-        from textual.containers import Container
-
         title = Static(self._render_title(), id="thinking-title")
         self._title_widget = title
         yield title
@@ -141,7 +130,6 @@ class ThinkingBox(Vertical):
             self._title_widget.update(self._render_title())
 
     def watch_steps(self, _old: list[ThinkingStep], _new: list[ThinkingStep]) -> None:
-        """Refresh all step widgets when the steps list mutates."""
         if not hasattr(self, "_step_widgets") or not self._step_widgets:
             return
         for i, widget in enumerate(self._step_widgets):
@@ -157,33 +145,26 @@ class ThinkingBox(Vertical):
     # ── Public API ──────────────────────────────────────────────────────
 
     def set_steps(self, labels: Iterable[str]) -> None:
-        """Reset the plan with a fresh set of step labels."""
         self.steps = [ThinkingStep(label=s) for s in labels]
-        # Re-render via recompose — the simplest reliable way to
-        # add/remove widgets in Textual.
         self._rebuild_step_widgets()
         self.refresh()
 
     def add_step(self, label: str) -> int:
-        """Append a new pending step; returns its index."""
         self.steps.append(ThinkingStep(label=label))
         self._append_step_widget(len(self.steps) - 1)
         return len(self.steps) - 1
 
     def start(self, index: int) -> None:
-        """Mark a step as currently running."""
         if 0 <= index < len(self.steps):
             self.steps[index].status = STEP_RUNNING
             self._update_step_widget(index)
 
     def complete(self, index: int) -> None:
-        """Mark a step as done."""
         if 0 <= index < len(self.steps):
             self.steps[index].status = STEP_DONE
             self._update_step_widget(index)
 
     def fail(self, index: int, detail: str = "") -> None:
-        """Mark a step as failed."""
         if 0 <= index < len(self.steps):
             self.steps[index].status = STEP_ERROR
             if detail:
@@ -191,7 +172,6 @@ class ThinkingBox(Vertical):
             self._update_step_widget(index)
 
     def reset(self) -> None:
-        """Clear all steps and the widget list."""
         self.steps = []
         self._step_widgets = []
         self.refresh()
@@ -206,13 +186,11 @@ class ThinkingBox(Vertical):
     # ── Internal helpers ────────────────────────────────────────────────
 
     def _rebuild_step_widgets(self) -> None:
-        """Recompose the widget list to match the current steps."""
         for w in self._step_widgets:
             w.remove()
         self._step_widgets = []
         for i in range(len(self.steps)):
             self._append_step_widget(i)
-        # Trigger a recompose-like update
         self.refresh(layout=True)
 
     def _append_step_widget(self, index: int) -> None:
@@ -233,31 +211,31 @@ class ThinkingBox(Vertical):
         widget.update(self._render_step(index))
 
     def _render_title(self) -> Text:
-        return Text(f" {self.title_text} ", style="bold #3b82f6")
+        return Text(f" {self.title_text}", style=f"{PALETTE.text_muted}")
 
     def _render_step(self, index: int) -> Text:
         step = self.steps[index]
         icon = STEP_ICONS.get(step.status, " ")
         text = Text()
-        text.append(f" {icon} ", style=self._icon_style(step.status))
+        text.append(f"  {icon} ", style=self._icon_style(step.status))
         text.append(step.label, style=self._label_style(step.status))
         if step.detail:
-            text.append(f"  {step.detail}", style="#ffffff")
+            text.append(f"  {step.detail}", style=PALETTE.text_muted)
         return text
 
     def _icon_style(self, status: str) -> str:
         return {
-            STEP_PENDING: "#ffffff",
-            STEP_RUNNING: "#f43f5e",
-            STEP_DONE: "#3b82f6",
-            STEP_ERROR: "#f43f5e",
-        }.get(status, "#ffffff")
+            STEP_PENDING: PALETTE.text_muted,
+            STEP_RUNNING: PALETTE.accent,
+            STEP_DONE: PALETTE.primary,
+            STEP_ERROR: PALETTE.error,
+        }.get(status, PALETTE.text_muted)
 
     def _label_style(self, status: str) -> str:
         if status == STEP_RUNNING:
-            return "bold #ffffff"
+            return f"bold {PALETTE.text}"
         if status == STEP_DONE:
-            return "#3b82f6"
+            return PALETTE.primary
         if status == STEP_ERROR:
-            return "#f43f5e"
-        return "#ffffff"
+            return PALETTE.error
+        return PALETTE.text_muted

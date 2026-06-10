@@ -1,4 +1,7 @@
-"""HelpScreen — modal showing all available commands grouped by category."""
+"""HelpScreen — modal showing all available commands grouped by category.
+
+Design: minimal. No borders, clean typography hierarchy.
+"""
 
 from __future__ import annotations
 
@@ -25,7 +28,7 @@ class HelpScreen(ModalScreen[None]):
     DEFAULT_CSS = """
     HelpScreen {
         align: center middle;
-        background: #000000;
+        background: #000000EE;
     }
 
     HelpScreen #help-content {
@@ -33,7 +36,6 @@ class HelpScreen(ModalScreen[None]):
         height: auto;
         max-height: 80%;
         background: #000000;
-        border: round #3b82f6;
         padding: 1 2;
     }
 
@@ -42,7 +44,6 @@ class HelpScreen(ModalScreen[None]):
         text-style: bold;
         height: 1;
         padding: 0 0 1 0;
-        border-bottom: solid #3b82f6;
         margin-bottom: 1;
     }
 
@@ -60,7 +61,7 @@ class HelpScreen(ModalScreen[None]):
 
     HelpScreen .help-row {
         height: 1;
-        color: #ffffff;
+        color: #666666;
     }
 
     HelpScreen .help-row .help-cmd {
@@ -70,11 +71,11 @@ class HelpScreen(ModalScreen[None]):
     }
 
     HelpScreen .help-row .help-desc {
-        color: #ffffff;
+        color: #666666;
     }
 
     HelpScreen #help-hint {
-        color: #ffffff;
+        color: #444444;
         text-align: center;
         padding: 1 0 0 0;
     }
@@ -97,15 +98,12 @@ class HelpScreen(ModalScreen[None]):
             )
 
     def _build_rows(self):
-        # Group by category
         by_category: dict[str, list[PaletteCommand]] = {}
         for c in self.commands:
             by_category.setdefault(c.category, []).append(c)
-        # Stable category order
         order = ["General", "Job Hunting", "Resume & Documents",
                  "History & Memory", "Developer", "Plugin"]
         cats = [c for c in order if c in by_category]
-        # Add any unexpected categories at the end
         for c in by_category:
             if c not in cats:
                 cats.append(c)
@@ -123,10 +121,10 @@ class HelpScreen(ModalScreen[None]):
         text = Text()
         text.append(f"  /{cmd.name:<14}", style="bold #f43f5e")
         text.append("  ", style="")
-        text.append(cmd.description, style="#ffffff")
+        text.append(cmd.description, style="#666666")
         if cmd.aliases:
             text.append(
-                f"   ({', '.join(cmd.aliases)})", style="#ffffff"
+                f"   ({', '.join(cmd.aliases)})", style="#666666"
             )
         return text
 

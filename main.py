@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import asyncio
 import logging
 import sys
 from pathlib import Path
@@ -117,11 +118,34 @@ def main() -> None:
         run_scheduler(config, repo, profile)
 
     elif args.mode == "chat":
-        from cli.app import InteractiveCLI
+        from chat.engine import ChatEngine
+        from chat.memory import ConversationMemory
+        from chat.session import SessionManager
+        from cli.router_bridge import build_router
+        from services.groq_service import GroqService
 
-        app = InteractiveCLI(config)
-        app.initialize()
-        app.run()
+        Path("data").mkdir(exist_ok=True)
+        groq = GroqService(config.ai)
+        session_manager = SessionManager()
+        memory = ConversationMemory(session_manager)
+        memory.init_session()
+        try:
+            sheets = GoogleSheetsService(config.google_sheets)
+            if config.google_sheets.enabled:
+                sheets.connect()
+        except Exception:
+            sheets = None
+        orchestrator = JobApplicationOrchestrator(
+            config, repo, profile, groq=groq, sheets=sheets,
+        )
+        router, _ = build_router(
+            config=config, repo=repo, groq=groq,
+            orchestrator=orchestrator, candidate_profile=profile,
+            memory=memory,
+        )
+        engine = ChatEngine(router=router, memory=memory, config=config)
+        asyncio.run(engine.run())
+        orchestrator.close()
         return
 
     # Cleanup

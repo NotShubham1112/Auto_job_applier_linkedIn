@@ -2,6 +2,8 @@
 
 The palette lists every available slash command. The user can type to
 filter, and Enter to run the highlighted command.
+
+Design: minimal. No borders, background highlight for selection.
 """
 
 from __future__ import annotations
@@ -21,8 +23,8 @@ from textual.widgets import Input, Static
 class PaletteCommand:
     """One entry in the command palette."""
 
-    name: str           # e.g. "new"
-    description: str    # human-readable description
+    name: str
+    description: str
     aliases: list[str] = None  # type: ignore
     category: str = "General"
     run: Optional[Callable[[str], None]] = None
@@ -42,8 +44,8 @@ class _PaletteRow(Static):
     DEFAULT_CSS = """
     _PaletteRow {
         height: 1;
-        color: #ffffff;
-        padding: 0 1;
+        color: #666666;
+        padding: 0 2;
     }
 
     _PaletteRow.--highlight {
@@ -58,20 +60,17 @@ class _PaletteRow(Static):
     }
 
     _PaletteRow .palette-desc {
-        color: #ffffff;
+        color: #666666;
     }
     """
 
     def __init__(self, command: PaletteCommand, **kwargs) -> None:
-        # Build the content and pass it via the constructor so the
-        # visual is set up correctly before the widget is mounted.
         content = self._build_text(command)
         super().__init__(content, markup=False, **kwargs)
         self.command = command
 
     def set_highlight(self, on: bool) -> None:
         self.set_class(on, "--highlight")
-        # Rebuild and update
         self.update(self._build_text(self.command))
 
     @staticmethod
@@ -79,11 +78,11 @@ class _PaletteRow(Static):
         text = Text()
         text.append(f" /{command.name:<10}", style="bold #f43f5e")
         text.append("  ", style="")
-        text.append(command.description, style="#ffffff")
+        text.append(command.description, style="#666666")
         if command.aliases:
             text.append("  ", style="")
             text.append(
-                f"({', '.join(command.aliases)})", style="#ffffff"
+                f"({', '.join(command.aliases)})", style="#666666"
             )
         return text
 
@@ -92,8 +91,7 @@ class CommandPalette(ModalScreen[Optional[str]]):
     """Modal command palette (ctrl+x).
 
     Dismisses with a result: the chosen command name, or None if the
-    user pressed Escape. The caller is responsible for executing the
-    command.
+    user pressed Escape.
     """
 
     BINDINGS = [
@@ -106,7 +104,7 @@ class CommandPalette(ModalScreen[Optional[str]]):
     DEFAULT_CSS = """
     CommandPalette {
         align: center middle;
-        background: #000000;
+        background: #000000EE;
     }
 
     CommandPalette #palette-container {
@@ -114,48 +112,43 @@ class CommandPalette(ModalScreen[Optional[str]]):
         height: auto;
         max-height: 24;
         background: #000000;
-        border: round #3b82f6;
-        padding: 1 1;
+        padding: 1 0;
     }
 
     CommandPalette #palette-title {
-        color: #3b82f6;
-        text-style: bold;
+        color: #666666;
         height: 1;
-        padding: 0 1;
+        padding: 0 2;
     }
 
     CommandPalette #palette-input {
         height: 3;
         background: #000000;
         color: #ffffff;
-        border: tall #3b82f6;
-        margin: 1 0;
+        margin: 0 2;
         padding: 0 1;
     }
 
     CommandPalette #palette-input:focus {
-        border: tall #f43f5e;
+        color: #ffffff;
     }
 
     CommandPalette #palette-input > .input--placeholder {
-        color: #ffffff;
-        text-style: italic;
+        color: #444444;
     }
 
     CommandPalette #palette-list {
         height: auto;
         max-height: 16;
         background: #000000;
-        border: round #3b82f6;
-        padding: 0 1;
+        padding: 0 0;
         scrollbar-size: 1 1;
     }
 
     CommandPalette #palette-hint {
-        color: #ffffff;
+        color: #444444;
         height: 1;
-        padding: 0 1;
+        padding: 0 2;
         margin-top: 1;
     }
     """
@@ -170,7 +163,7 @@ class CommandPalette(ModalScreen[Optional[str]]):
 
     def compose(self) -> ComposeResult:
         with Container(id="palette-container"):
-            yield Static(" BROWORK \u2014 Command Palette ", id="palette-title")
+            yield Static(" Command Palette ", id="palette-title")
             self._input_widget = Input(
                 placeholder="Type a command...",
                 id="palette-input",
@@ -204,11 +197,9 @@ class CommandPalette(ModalScreen[Optional[str]]):
         self._rebuild_rows()
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
-        """When the user presses Enter in the search input, select."""
         self.action_select()
 
     def _matches(self, haystack: str, needle: str) -> bool:
-        # Simple fuzzy match: all characters of needle must appear in order
         hi = 0
         for ch in needle:
             found = haystack.find(ch, hi)
